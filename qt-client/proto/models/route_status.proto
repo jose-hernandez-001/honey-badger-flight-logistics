@@ -1,0 +1,11 @@
+syntax = "proto3";
+
+package openapitools;
+
+enum RouteStatus {
+  ROUTE_STATUS_PLANNED   = 0;
+  ROUTE_STATUS_ACTIVE    = 1;
+  ROUTE_STATUS_PAUSED    = 2;
+  ROUTE_STATUS_COMPLETED = 3;
+  ROUTE_STATUS_ABORTED   = 4;
+}

@@ -1,0 +1,11 @@
+syntax = "proto3";
+
+package openapitools;
+
+message ProblemDetail {
+  string type     = 3575610;
+  string title    = 110371416;
+  int32  status   = 355610639;
+  string detail   = 261482417;
+  string instance = 18257046;
+}

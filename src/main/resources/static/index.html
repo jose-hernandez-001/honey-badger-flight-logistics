@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="en" data-bs-theme="light">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Honey Badger Flight Logistics Dashboard</title>
+  <link rel="icon" href="/img/favicon.svg" type="image/svg+xml" />
+  <link rel="stylesheet" href="/vendor/bootstrap.min.css" />
+  <link rel="stylesheet" href="/vendor/bootstrap-icons.min.css" />
+  <link rel="stylesheet" href="/css/app.css" />
+</head>
+<body class="bg-body-tertiary app-shell route-page-body">
+
+  <nav class="navbar bg-body shadow-sm mb-4">
+    <div class="container-fluid">
+      <a class="navbar-brand fw-bold" href="/"><i class="bi bi-airplane me-2"></i>Honey Badger Flight Logistics</a>
+      <button id="theme-toggle" class="btn btn-sm btn-outline-secondary ms-auto"
+              title="Toggle theme" onclick="toggleTheme()">
+        <i class="bi bi-moon-stars-fill" id="theme-icon"></i>
+      </button>
+    </div>
+  </nav>
+
+  <main class="container pb-5">
+    <div class="row g-4 align-items-stretch justify-content-center">
+      <div class="col-12">
+        <div class="mb-2">
+          <nav aria-label="breadcrumb" class="mb-2">
+            <ol class="breadcrumb small mb-0">
+              <li class="breadcrumb-item active" aria-current="page"><i class="bi bi-house me-1"></i>Home</li>
+            </ol>
+          </nav>
+          <h1 class="display-6 fw-bold mb-1">Honey Badger Flight Logistics Dashboard</h1>
+          <p class="text-body-secondary mb-0">Local development console for parcel-delivery routes, documentation, data services, and health tooling.</p>
+        </div>
+      </div>
+
+      <div class="col-12 col-lg-6 d-flex">
+        <section class="card dashboard-card shadow-sm border-0 w-100" data-accent="primary">
+          <div class="card-body p-4">
+            <div class="d-flex align-items-center gap-2 mb-2">
+              <i class="bi bi-map fs-4 text-primary"></i>
+              <h2 class="h5 mb-0">Delivery Operations</h2>
+            </div>
+            <p class="text-body-secondary small mb-3">Browse parcel pickup routes, inspect stop sequences, and manage last-mile route planning from a single entry point.</p>
+            <div class="hero-metrics mb-4">
+              <div class="metric-pill">
+                <span class="metric-label">Total Runs</span>
+                <span id="dash-total-runs" class="metric-value">&#8212;</span>
+              </div>
+              <div class="metric-pill">
+                <span class="metric-label">Active Runs</span>
+                <span id="dash-active-runs" class="metric-value">&#8212;</span>
+              </div>
+              <div class="metric-pill">
+                <span class="metric-label">Tracked Stops</span>
+                <span id="dash-tracked-stops" class="metric-value">&#8212;</span>
+              </div>
+            </div>
+            <div class="mt-auto d-grid gap-2">
+              <a href="/routes.html" class="btn btn-outline-primary">
+                <i class="bi bi-map me-2"></i>Delivery Routes &amp; Stops
+              </a>
+            </div>
+          </div>
+        </section>
+      </div>
+
+      <div class="col-12 col-lg-6 d-flex">
+        <section class="card dashboard-card shadow-sm border-0 w-100" data-accent="success">
+          <div class="card-body p-4">
+            <div class="d-flex align-items-center gap-2 mb-2">
+              <i class="bi bi-file-earmark-text fs-4 text-success"></i>
+              <h2 class="h5 mb-0">API Documentation</h2>
+            </div>
+            <p class="text-body-secondary small mb-4">Open the same API contract in multiple viewers depending on whether you want examples, exploration, or raw schema access.</p>
+            <div class="mt-auto d-grid gap-2">
+              <div class="row g-2">
+                <div class="col-6">
+                  <a href="/swagger-ui.html" class="btn btn-success btn-sm w-100">
+                    <i class="bi bi-file-earmark-code me-1"></i>Swagger UI
+                  </a>
+                </div>
+                <div class="col-6">
+                  <a href="/redoc.html" class="btn btn-danger btn-sm w-100">
+                    <i class="bi bi-book me-1"></i>ReDoc
+                  </a>
+                </div>
+                <div class="col-6">
+                  <a href="/scalar.html" class="btn btn-primary btn-sm w-100">
+                    <i class="bi bi-braces me-1"></i>Scalar
+                  </a>
+                </div>
+                <div class="col-6">
+                  <a href="/v3/api-docs" class="btn btn-outline-secondary btn-sm w-100">
+                    <i class="bi bi-filetype-json me-1"></i>OpenAPI JSON
+                  </a>
+                </div>
+                <div class="col-12">
+                  <a href="/docs.html" class="btn btn-outline-success btn-sm w-100">
+                    <i class="bi bi-journal-text me-1"></i>Reference Documentation
+                  </a>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+      </div>
+
+      <div class="col-12 col-lg-6 d-flex">
+        <section class="card dashboard-card shadow-sm border-0 w-100" data-accent="info">
+          <div class="card-body p-4">
+            <div class="d-flex align-items-center gap-2 mb-2">
+              <i class="bi bi-database fs-4 text-info"></i>
+              <h2 class="h5 mb-0">Database Management</h2>
+            </div>
+            <p class="text-body-secondary small mb-4">Inspect the active Neo4j connection details and jump straight into the browser for graph exploration.</p>
+            <div class="card bg-body-secondary border-0 mb-3">
+              <ul class="list-group list-group-flush rounded">
+                <li class="list-group-item bg-transparent py-2">
+                  <div class="row g-2 align-items-center flex-nowrap">
+                    <div class="col-3 col-sm-2 text-body-secondary small">URL</div>
+                    <div class="col text-truncate">
+                      <code class="small text-body d-block text-truncate" id="db-url">&#8212;</code>
+                    </div>
+                    <div class="col-auto">
+                      <button class="btn btn-sm btn-outline-secondary" onclick="copyField('db-url')" title="Copy URL">
+                        <i class="bi bi-copy"></i>
+                      </button>
+                    </div>
+                  </div>
+                </li>
+                <li class="list-group-item bg-transparent py-2">
+                  <div class="row g-2 align-items-center flex-nowrap">
+                    <div class="col-3 col-sm-2 text-body-secondary small">Username</div>
+                    <div class="col text-truncate">
+                      <code class="small text-body d-block text-truncate" id="db-username">&#8212;</code>
+                    </div>
+                    <div class="col-auto">
+                      <button class="btn btn-sm btn-outline-secondary" onclick="copyField('db-username')" title="Copy username">
+                        <i class="bi bi-copy"></i>
+                      </button>
+                    </div>
+                  </div>
+                </li>
+                <li class="list-group-item bg-transparent py-2">
+                  <div class="row g-2 align-items-center flex-nowrap">
+                    <div class="col-3 col-sm-2 text-body-secondary small">Password</div>
+                    <div class="col text-truncate">
+                      <code class="small text-body d-block text-truncate" id="db-password">&#8212;</code>
+                    </div>
+                    <div class="col-auto d-flex gap-1">
+                      <button class="btn btn-sm btn-outline-secondary" id="pw-toggle" onclick="togglePassword()" title="Show / hide password">
+                        <i class="bi bi-eye" id="pw-icon"></i>
+                      </button>
+                      <button class="btn btn-sm btn-outline-secondary" onclick="copyPassword()" title="Copy password">
+                        <i class="bi bi-copy"></i>
+                      </button>
+                    </div>
+                  </div>
+                </li>
+              </ul>
+            </div>
+            <div class="mt-auto d-grid">
+              <a class="btn btn-success" id="neo4j-browser-link" href="http://localhost:7474/browser/"
+                 target="_blank" rel="noopener noreferrer">
+                <i class="bi bi-diagram-3 me-2"></i>Open Neo4j Browser
+              </a>
+            </div>
+          </div>
+        </section>
+      </div>
+
+      <div class="col-12 col-lg-6 d-flex">
+        <section class="card dashboard-card shadow-sm border-0 w-100" data-accent="warning">
+          <div class="card-body p-4">
+            <div class="d-flex align-items-center gap-2 mb-2">
+              <i class="bi bi-globe fs-4 text-warning"></i>
+              <h2 class="h5 mb-0">GeoServer</h2>
+            </div>
+            <p class="text-body-secondary small mb-4">Review map service access details and open the GeoServer admin console for layers, styles, and workspace management.</p>
+            <div class="card bg-body-secondary border-0 mb-3">
+              <ul class="list-group list-group-flush rounded">
+                <li class="list-group-item bg-transparent py-2">
+                  <div class="row g-2 align-items-center flex-nowrap">
+                    <div class="col-3 col-sm-2 text-body-secondary small">URL</div>
+                    <div class="col text-truncate">
+                      <code class="small text-body d-block text-truncate" id="gs-url">http://localhost:8600/geoserver/web/</code>
+                    </div>
+                    <div class="col-auto">
+                      <button class="btn btn-sm btn-outline-secondary" onclick="copyField('gs-url')" title="Copy URL">
+                        <i class="bi bi-copy"></i>
+                      </button>
+                    </div>
+                  </div>
+                </li>
+                <li class="list-group-item bg-transparent py-2">
+                  <div class="row g-2 align-items-center flex-nowrap">
+                    <div class="col-3 col-sm-2 text-body-secondary small">Username</div>
+                    <div class="col text-truncate">
+                      <code class="small text-body d-block text-truncate" id="gs-username">admin</code>
+                    </div>
+                    <div class="col-auto">
+                      <button class="btn btn-sm btn-outline-secondary" onclick="copyField('gs-username')" title="Copy username">
+                        <i class="bi bi-copy"></i>
+                      </button>
+                    </div>
+                  </div>
+                </li>
+                <li class="list-group-item bg-transparent py-2">
+                  <div class="row g-2 align-items-center flex-nowrap">
+                    <div class="col-3 col-sm-2 text-body-secondary small">Password</div>
+                    <div class="col text-truncate">
+                      <code class="small text-body d-block text-truncate" id="gs-password">geoserver</code>
+                    </div>
+                    <div class="col-auto d-flex gap-1">
+                      <button class="btn btn-sm btn-outline-secondary" id="gs-pw-toggle" onclick="toggleGsPassword()" title="Show / hide password">
+                        <i class="bi bi-eye" id="gs-pw-icon"></i>
+                      </button>
+                      <button class="btn btn-sm btn-outline-secondary" onclick="navigator.clipboard.writeText(gsPassword).catch(function(){})" title="Copy password">
+                        <i class="bi bi-copy"></i>
+                      </button>
+                    </div>
+                  </div>
+                </li>
+              </ul>
+            </div>
+            <div class="mt-auto d-grid">
+              <a class="btn btn-success" id="geoserver-link" href="http://localhost:8600/geoserver/web/"
+                 target="_blank" rel="noopener noreferrer">
+                <i class="bi bi-globe me-2"></i>Open GeoServer Admin
+              </a>
+            </div>
+          </div>
+        </section>
+      </div>
+
+      <div class="col-12 col-lg-6 d-flex">
+        <section class="card dashboard-card shadow-sm border-0 w-100" data-accent="danger">
+          <div class="card-body p-4">
+            <div class="d-flex align-items-center gap-2 mb-2">
+              <i class="bi bi-heart-pulse fs-4 text-danger"></i>
+              <h2 class="h5 mb-0">Monitoring</h2>
+            </div>
+            <p class="text-body-secondary small mb-4">Check operational endpoints and inspect the application state exposed by Spring Boot Actuator.</p>
+            <div class="mt-auto d-grid gap-2">
+              <a href="/actuator" class="btn btn-outline-secondary" target="_blank" rel="noopener noreferrer">
+                <i class="bi bi-activity me-2"></i>Actuator Endpoints
+              </a>
+            </div>
+          </div>
+        </section>
+      </div>
+    </div>
+  </main>
+
+  <script src="/vendor/bootstrap.bundle.min.js"></script>
+  <script src="/js/app.js"></script>
+  <script>
+    // Password handling
+    var realPassword = '';
+    var passwordVisible = false;
+
+    function mask(s) {
+      if (!s) return '—';
+      var r = '';
+      for (var i = 0; i < s.length; i++) r += '•';
+      return r;
+    }
+
+    function copyField(id) {
+      navigator.clipboard.writeText(document.getElementById(id).textContent).catch(function() {});
+    }
+
+    function copyPassword() {
+      navigator.clipboard.writeText(realPassword).catch(function() {});
+    }
+
+    function togglePassword() {
+      passwordVisible = !passwordVisible;
+      document.getElementById('db-password').textContent = passwordVisible ? realPassword : mask(realPassword);
+      document.getElementById('pw-icon').className = passwordVisible ? 'bi bi-eye-slash' : 'bi bi-eye';
+    }
+
+    // GeoServer password masking
+    var gsPasswordVisible = false;
+    var gsPassword = 'geoserver';
+    document.getElementById('gs-password').textContent = mask(gsPassword);
+
+    function toggleGsPassword() {
+      gsPasswordVisible = !gsPasswordVisible;
+      document.getElementById('gs-password').textContent = gsPasswordVisible ? gsPassword : mask(gsPassword);
+      document.getElementById('gs-pw-icon').className = gsPasswordVisible ? 'bi bi-eye-slash' : 'bi bi-eye';
+    }
+
+    // Neo4j browser link
+    var neo4jLink = document.getElementById('neo4j-browser-link');
+    var scheme = window.location.protocol === 'https:' ? 'https:' : 'http:';
+    var bport = scheme === 'https:' ? '7473' : '7474';
+    neo4jLink.href = scheme + '//' + (window.location.hostname || 'localhost') + ':' + bport + '/browser/';
+
+    fetch('/api/neo4j/browser-url')
+      .then(function(r) { return r.ok ? r.json() : Promise.reject(); })
+      .then(function(data) {
+        if (data.browserUrl)    neo4jLink.href = data.browserUrl;
+        if (data.connectionUrl) document.getElementById('db-url').textContent      = data.connectionUrl;
+        if (data.username)      document.getElementById('db-username').textContent = data.username;
+        if (data.password) {
+          realPassword = data.password;
+          document.getElementById('db-password').textContent = mask(realPassword);
+        }
+      })
+      .catch(function() {});
+
+    // GeoServer link — use current hostname so it works on any host
+    var gsAdminUrl = window.location.protocol + '//' + (window.location.hostname || 'localhost') + ':8600/geoserver/web/';
+    document.getElementById('gs-url').textContent = gsAdminUrl;
+    document.getElementById('geoserver-link').href = gsAdminUrl;
+
+    fetch('/api/geoserver/info')
+      .then(function(r) { return r.ok ? r.json() : Promise.reject(); })
+      .then(function(data) {
+        if (data.adminUrl) {
+          document.getElementById('gs-url').textContent = data.adminUrl;
+          document.getElementById('geoserver-link').href = data.adminUrl;
+        }
+      })
+      .catch(function() {});
+
+    fetch('/api/v1/routes?size=100')
+      .then(function(r) { return r.ok ? r.json() : Promise.reject(); })
+      .then(function(data) {
+        var list   = (data && data.content) ? data.content : [];
+        var active = list.filter(function(m) { return m.status === 'ACTIVE'; }).length;
+        var stops  = list.reduce(function(t, m) { return t + (m.waypointCount || 0); }, 0);
+        document.getElementById('dash-total-runs').textContent    = list.length;
+        document.getElementById('dash-active-runs').textContent   = active;
+        document.getElementById('dash-tracked-stops').textContent = stops;
+      })
+      .catch(function() {});
+  </script>
+</body>
+</html>

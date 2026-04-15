@@ -1,0 +1,103 @@
+syntax = "proto3";
+
+package openapitools.services.routesservice;
+
+import "google/protobuf/empty.proto";
+import public "models/problem_detail.proto";
+import public "models/route.proto";
+import public "models/route_page.proto";
+import public "models/route_patch.proto";
+import public "models/route_request.proto";
+import public "models/route_status.proto";
+
+service RoutesService {
+  rpc CreateRoute  (CreateRouteRequest)  returns (CreateRouteResponse);
+  rpc DeleteRoute  (DeleteRouteRequest)  returns (DeleteRouteResponse);
+  rpc GetRoute     (GetRouteRequest)     returns (GetRouteResponse);
+  rpc ListRoutes   (ListRoutesRequest)   returns (ListRoutesResponse);
+  rpc PatchRoute   (PatchRouteRequest)   returns (PatchRouteResponse);
+  rpc UpdateRoute  (UpdateRouteRequest)  returns (UpdateRouteResponse);
+}
+
+message CreateRouteRequest {
+  RouteRequest route_request = 1;
+}
+
+message CreateRouteResponse {
+  oneof response {
+    Route        route_201            = 1;
+    ProblemDetail problem_detail_400  = 2;
+    ProblemDetail problem_detail_422  = 3;
+    ProblemDetail problem_detail_500  = 4;
+  }
+}
+
+message DeleteRouteRequest {
+  string route_id = 1;
+}
+
+message DeleteRouteResponse {
+  oneof response {
+    google.protobuf.Empty empty_204           = 1;
+    ProblemDetail         problem_detail_404  = 2;
+    ProblemDetail         problem_detail_409  = 3;
+    ProblemDetail         problem_detail_500  = 4;
+  }
+}
+
+message GetRouteRequest {
+  string route_id = 1;
+}
+
+message GetRouteResponse {
+  oneof response {
+    Route         route_200           = 1;
+    ProblemDetail problem_detail_404  = 2;
+    ProblemDetail problem_detail_500  = 3;
+  }
+}
+
+message ListRoutesRequest {
+  RouteStatus status = 1;
+  int32       page   = 2;
+  int32       size   = 3;
+  string      sort   = 4;
+}
+
+message ListRoutesResponse {
+  oneof response {
+    RoutePage     route_page_200      = 1;
+    ProblemDetail problem_detail_400  = 2;
+    ProblemDetail problem_detail_500  = 3;
+  }
+}
+
+message PatchRouteRequest {
+  string     route_id    = 1;
+  RoutePatch route_patch = 2;
+}
+
+message PatchRouteResponse {
+  oneof response {
+    Route         route_200           = 1;
+    ProblemDetail problem_detail_400  = 2;
+    ProblemDetail problem_detail_404  = 3;
+    ProblemDetail problem_detail_422  = 4;
+    ProblemDetail problem_detail_500  = 5;
+  }
+}
+
+message UpdateRouteRequest {
+  string       route_id      = 1;
+  RouteRequest route_request = 2;
+}
+
+message UpdateRouteResponse {
+  oneof response {
+    Route         route_200           = 1;
+    ProblemDetail problem_detail_400  = 2;
+    ProblemDetail problem_detail_404  = 3;
+    ProblemDetail problem_detail_422  = 4;
+    ProblemDetail problem_detail_500  = 5;
+  }
+}

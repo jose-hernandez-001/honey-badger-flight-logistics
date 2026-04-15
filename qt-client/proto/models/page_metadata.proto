@@ -1,0 +1,10 @@
+syntax = "proto3";
+
+package openapitools;
+
+message PageMetadata {
+  int32 number         = 497493176;
+  int32 size           = 3530753;
+  int64 total_elements = 27819120;
+  int32 total_pages    = 396186871;
+}

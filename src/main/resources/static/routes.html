@@ -1,0 +1,695 @@
+<!DOCTYPE html>
+<html lang="en" data-bs-theme="light">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Honey Badger Flight Logistics — Delivery Routes</title>
+  <link rel="icon" href="/img/favicon.svg" type="image/svg+xml" />
+  <link rel="stylesheet" href="/vendor/bootstrap.min.css" />
+  <link rel="stylesheet" href="/vendor/bootstrap-icons.min.css" />
+  <link rel="stylesheet" href="/css/app.css" />
+</head>
+<body class="bg-body-tertiary app-shell route-page-body">
+
+  <div id="alert-area" class="toast-container app-toast-stack position-fixed bottom-0 end-0 p-3"></div>
+
+  <!-- Navbar -->
+  <nav class="navbar bg-body shadow-sm mb-4">
+    <div class="container-fluid">
+      <a class="navbar-brand fw-bold" href="/"><i class="bi bi-airplane me-2"></i>Honey Badger Flight Logistics</a>
+      <button id="theme-toggle" class="btn btn-sm btn-outline-secondary ms-auto"
+              title="Toggle theme" onclick="toggleTheme()">
+        <i class="bi bi-moon-stars-fill" id="theme-icon"></i>
+      </button>
+    </div>
+  </nav>
+
+  <div class="container-xl pb-5">
+
+    <!-- Breadcrumb -->
+    <nav aria-label="breadcrumb" class="mb-3">
+      <ol class="breadcrumb small mb-0">
+        <li class="breadcrumb-item"><a href="/" class="link-secondary text-decoration-none"><i class="bi bi-house me-1"></i>Home</a></li>
+        <li class="breadcrumb-item active" aria-current="page"><i class="bi bi-map me-1"></i>Delivery Routes</li>
+      </ol>
+    </nav>
+
+    <!-- Page header -->
+    <div class="card page-hero has-hero-image has-plane-figure surface-card border-0 mb-4">
+      <div class="card-body p-3 p-lg-4">
+        <div class="d-flex align-items-start justify-content-between gap-3 flex-wrap">
+          <div class="min-w-0">
+            <div class="page-kicker mb-3"><i class="bi bi-box-seam"></i>Parcel Logistics</div>
+            <h1 class="display-6 fw-bold mb-2"><i class="bi bi-map me-2"></i>Delivery Route Portfolio</h1>
+            <p class="text-body-secondary mb-0 col-lg-10">Coordinate parcel pickup runs, review stop sequences, and keep delivery operations on schedule from one logistics workspace.</p>
+          </div>
+          <button class="btn btn-primary px-4 shadow-sm" data-bs-toggle="modal" data-bs-target="#addRouteModal">
+            <i class="bi bi-plus-lg me-1"></i>Add Delivery Route
+          </button>
+        </div>
+        <div class="hero-metrics mt-4">
+          <div class="metric-pill">
+            <span class="metric-label">Total Runs</span>
+            <span id="routes-total-count" class="metric-value">0</span>
+          </div>
+          <div class="metric-pill">
+            <span class="metric-label">Active Runs</span>
+            <span id="routes-active-count" class="metric-value">0</span>
+          </div>
+          <div class="metric-pill">
+            <span class="metric-label">Tracked Stops</span>
+            <span id="routes-waypoint-count" class="metric-value">0</span>
+          </div>
+        </div>
+      </div>
+      <img class="page-hero-figure page-hero-figure-plane" src="/img/airplane.png" alt="" aria-hidden="true" />
+    </div>
+
+    <!-- Alert area -->
+    <!-- Route list -->
+    <div id="routes-container">
+      <div class="card surface-card border-0 shadow-sm">
+        <div class="card-body text-center py-5 text-body-secondary">
+          <div class="spinner-border mb-3" role="status"><span class="visually-hidden">Loading…</span></div>
+          <p class="mb-0">Loading delivery routes…</p>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ==========================================================================
+       Add Route Modal
+       ========================================================================== -->
+  <div class="modal fade" id="addRouteModal" tabindex="-1"
+       aria-labelledby="addRouteModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="addRouteModalLabel">
+            <i id="m-modal-icon" class="bi bi-plus-circle me-2"></i><span id="m-modal-title-text">Add Delivery Route</span>
+          </h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <form id="add-route-form" novalidate>
+          <input type="hidden" id="m-id" />
+          <div class="modal-body">
+            <div class="mb-3">
+              <label for="m-name" class="form-label fw-semibold">
+                Name <span class="text-danger">*</span>
+              </label>
+              <input type="text" class="form-control" id="m-name" required maxlength="100"
+                     placeholder="Midlands Depot Pickup Run" />
+              <div class="invalid-feedback">Name is required (max 100 characters).</div>
+            </div>
+            <div class="mb-3">
+              <label for="m-description" class="form-label fw-semibold">Description</label>
+              <textarea class="form-control" id="m-description" rows="2" maxlength="1000"
+                        placeholder="Optional delivery brief…"></textarea>
+            </div>
+            <div class="mb-3">
+              <label for="m-aircraft-id" class="form-label fw-semibold">
+                Drone ID <span class="text-danger">*</span>
+              </label>
+              <input type="text" class="form-control font-monospace" id="m-aircraft-id" required
+                     pattern="[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}"
+                     placeholder="a1b2c3d4-e5f6-7890-abcd-ef1234567890" />
+              <div class="invalid-feedback">A valid UUID is required.</div>
+            </div>
+            <div class="mb-3">
+              <label for="m-status" class="form-label fw-semibold">Status</label>
+              <select class="form-select" id="m-status">
+                <option value="PLANNED" selected>PLANNED</option>
+                <option value="ACTIVE">ACTIVE</option>
+                <option value="PAUSED">PAUSED</option>
+                <option value="COMPLETED">COMPLETED</option>
+                <option value="ABORTED">ABORTED</option>
+              </select>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-outline-secondary me-auto" onclick="fillRandomRoute()">
+              <i class="bi bi-shuffle me-1"></i>Random
+            </button>
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+            <button type="submit" class="btn btn-primary">
+              <i class="bi bi-check-lg me-1"></i><span id="m-submit-text">Create Delivery Route</span>
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==========================================================================
+       Add Waypoint Modal
+       ========================================================================== -->
+  <div class="modal fade" id="addWaypointModal" tabindex="-1"
+       aria-labelledby="addWaypointModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="addWaypointModalLabel">
+            <i id="wp-modal-icon" class="bi bi-geo-alt me-2"></i><span id="wp-modal-title-text">Add Stop</span>
+          </h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <form id="add-waypoint-form" novalidate>
+          <input type="hidden" id="wp-route-id" />
+          <input type="hidden" id="wp-id" />
+          <div class="modal-body">
+            <div class="row g-3">
+              <div class="col-sm-8">
+                <label for="wp-name" class="form-label fw-semibold">
+                  Name <span class="text-danger">*</span>
+                </label>
+                <input type="text" class="form-control" id="wp-name" required maxlength="100"
+                       placeholder="Depot Pickup 1" />
+                <div class="invalid-feedback">Name is required (max 100 characters).</div>
+              </div>
+              <div class="col-sm-4">
+                <label for="wp-sequence" class="form-label fw-semibold">
+                  Stop Order <span class="text-danger">*</span>
+                </label>
+                <input type="number" class="form-control" id="wp-sequence" required min="1"
+                       placeholder="1" />
+                <div class="invalid-feedback">Sequence ≥ 1 is required.</div>
+              </div>
+              <div class="col-sm-4">
+                <label for="wp-latitude" class="form-label fw-semibold">
+                  Latitude <span class="text-danger">*</span>
+                </label>
+                <input type="number" class="form-control" id="wp-latitude" required
+                       step="any" min="-90" max="90" placeholder="51.5074" />
+                <div class="invalid-feedback">−90 to +90.</div>
+              </div>
+              <div class="col-sm-4">
+                <label for="wp-longitude" class="form-label fw-semibold">
+                  Longitude <span class="text-danger">*</span>
+                </label>
+                <input type="number" class="form-control" id="wp-longitude" required
+                       step="any" min="-180" max="180" placeholder="-0.1278" />
+                <div class="invalid-feedback">−180 to +180.</div>
+              </div>
+              <div class="col-sm-4">
+                <label for="wp-altitude" class="form-label fw-semibold">
+                  Cruise Altitude (m AMSL) <span class="text-danger">*</span>
+                </label>
+                <input type="number" class="form-control" id="wp-altitude" required
+                       step="any" placeholder="3000" />
+                <div class="invalid-feedback">Required.</div>
+              </div>
+              <div class="col-sm-4">
+                <label for="wp-speed" class="form-label fw-semibold">Cruise Speed (kts)</label>
+                <input type="number" class="form-control" id="wp-speed"
+                       step="any" min="0" placeholder="250" />
+              </div>
+              <div class="col-sm-4">
+                <label for="wp-heading" class="form-label fw-semibold">Approach Heading (°)</label>
+                <input type="number" class="form-control" id="wp-heading"
+                       step="any" min="0" max="360" placeholder="045" />
+              </div>
+              <div class="col-sm-4">
+                <label for="wp-hold-time" class="form-label fw-semibold">Service Time (s)</label>
+                <input type="number" class="form-control" id="wp-hold-time"
+                       min="0" placeholder="120" />
+              </div>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-outline-secondary me-auto" onclick="fillRandomWaypoint()">
+              <i class="bi bi-shuffle me-1"></i>Random
+            </button>
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+            <button type="submit" class="btn btn-primary">
+              <i class="bi bi-check-lg me-1"></i><span id="wp-submit-text">Add Stop</span>
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <script src="/vendor/bootstrap.bundle.min.js"></script>
+  <script src="/js/app.js"></script>
+  <script src="/js/stop-manifest.js"></script>
+  <script>
+    'use strict';
+
+    // -------------------------------------------------------------------------
+    // Config
+    // -------------------------------------------------------------------------
+    var API = '/api/v1';
+    var AUTH = 'Basic ' + btoa('admin:admin');
+    var JSON_HEADERS = { 'Content-Type': 'application/json', 'Authorization': AUTH };
+    var READ_HEADERS = { 'Authorization': AUTH };
+
+    var STATUS_CLASS = {
+      PLANNED: 'bg-secondary',
+      ACTIVE: 'bg-success',
+      PAUSED: 'bg-warning text-dark',
+      COMPLETED: 'bg-primary',
+      ABORTED: 'bg-danger'
+    };
+
+    var _routeCache  = {};
+    var _waypointCache = {};
+
+    // -------------------------------------------------------------------------
+    // Helpers
+    // -------------------------------------------------------------------------
+    function escHtml(s) {
+      return String(s == null ? '' : s)
+        .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;').replace(/'/g, '&#039;');
+    }
+
+    function fmt(n) {
+      return n != null ? String(Math.round(n * 10000) / 10000) : '—';
+    }
+
+    function fmtDate(s) {
+      if (!s) return '—';
+      try { return new Date(s).toLocaleString(); } catch (e) { return s; }
+    }
+
+    function statusBadge(s) {
+      var cls = STATUS_CLASS[s] || 'bg-secondary';
+      return '<span class="badge rounded-2 shadow-sm ' + cls + ' small fw-bold d-inline-flex align-items-center justify-content-center align-self-start text-center text-nowrap px-3 py-2">' + escHtml(s) + '</span>';
+    }
+
+    function metaChip(icon, content) {
+      return '<span class="meta-chip"><i class="bi bi-' + icon + '"></i><span>' + content + '</span></span>';
+    }
+
+    function showAlert(msg, type) {
+      var resolvedType = type || 'danger';
+      var icon = resolvedType === 'success' ? 'check-circle' : 'exclamation-triangle';
+      showAppToast({
+        type: resolvedType,
+        message: '<i class="bi bi-' + icon + ' me-2"></i>' + escHtml(msg),
+        html: true,
+        containerId: 'alert-area'
+      });
+    }
+
+    // -------------------------------------------------------------------------
+    // API
+    // -------------------------------------------------------------------------
+    function apiFetch(method, url, body) {
+      var opts = { method: method };
+      if (body !== undefined) {
+        opts.headers = JSON_HEADERS;
+        opts.body = JSON.stringify(body);
+      } else {
+        opts.headers = READ_HEADERS;
+      }
+      return fetch(url, opts).then(function (r) {
+        if (r.status === 204) return null;
+        if (!r.ok) return r.text().then(function (t) { throw new Error(r.status + ': ' + t); });
+        return r.json();
+      });
+    }
+
+    // -------------------------------------------------------------------------
+    // Render routes
+    // -------------------------------------------------------------------------
+    function updateRouteOverview(routes) {
+      var list = routes || [];
+      var activeCount = list.filter(function (route) { return route.status === 'ACTIVE'; }).length;
+      var waypointCount = list.reduce(function (total, route) {
+        return total + (route.waypointCount || 0);
+      }, 0);
+
+      document.getElementById('routes-total-count').textContent = list.length;
+      document.getElementById('routes-active-count').textContent = activeCount;
+      document.getElementById('routes-waypoint-count').textContent = waypointCount;
+    }
+
+    function renderRoutes(routes) {
+      routes.forEach(function (m) { _routeCache[m.id] = m; });
+      updateRouteOverview(routes);
+      var c = document.getElementById('routes-container');
+      if (!routes || routes.length === 0) {
+        c.innerHTML =
+          '<div class="card surface-card border-0 shadow-sm">' +
+            '<div class="card-body text-center py-5 text-body-secondary">' +
+              '<i class="bi bi-inbox fs-1 d-block mb-2"></i>' +
+              '<p class="mb-0">No delivery routes found. Click <strong>Add Delivery Route</strong> to build a route.</p>' +
+            '</div>' +
+          '</div>';
+        return;
+      }
+      c.innerHTML = routes.map(routeCard).join('');
+      routes.forEach(function (m) {
+        var el = document.getElementById('stop-manifest-' + m.id);
+        if (el) el.configure({ apiFetch: function (method, path, body) { return apiFetch(method, API + path, body); } });
+      });
+    }
+
+    function routeCard(m) {
+      var safeId = escHtml(m.id);
+      var safeName = escHtml(m.name);
+      var safeAircraft = escHtml(m.aircraftId || '—');
+      return (
+        '<div class="card route-card surface-card border-0 mb-4" id="route-' + safeId + '">' +
+          '<div class="card-header bg-transparent border-0 px-4 pt-4 pb-0">' +
+            '<div class="d-flex align-items-start justify-content-between gap-3 flex-wrap">' +
+              '<div class="min-w-0 flex-grow-1">' +
+                '<div class="d-flex align-items-center gap-2 flex-wrap mb-3">' +
+                  statusBadge(m.status) +
+                  '<span class="page-kicker"><i class="bi bi-box-seam"></i>Delivery brief</span>' +
+                '</div>' +
+                '<h2 class="h4 mb-2">' +
+                  '<a href="/route.html?id=' + safeId + '" class="icon-link icon-link-hover link-primary fw-bold text-decoration-none" title="Open delivery route">' +
+                    safeName +
+                    '<i class="bi bi-arrow-right" aria-hidden="true"></i>' +
+                  '</a>' +
+                '</h2>' +
+                (m.description
+                  ? '<p class="text-body-secondary mb-0">' + escHtml(m.description) + '</p>'
+                  : '') +
+                '<div class="d-flex flex-wrap gap-2 mt-4">' +
+                  metaChip('airplane', '<span class="font-monospace">' + safeAircraft + '</span>') +
+                  metaChip('pin-map', escHtml(String(m.waypointCount || 0)) + ' stops') +
+                  metaChip('clock-history', escHtml(fmtDate(m.updatedAt))) +
+                '</div>' +
+              '</div>' +
+              '<div class="d-flex gap-2 flex-shrink-0">' +
+              '<button class="btn btn-sm btn-outline-secondary" title="Edit route" ' +
+                'onclick="openEditRouteModal(\'' + safeId + '\')">' +
+                '<i class="bi bi-pencil"></i>' +
+              '</button>' +
+              '<button class="btn btn-sm btn-outline-danger" title="Delete route" ' +
+                'onclick="deleteRoute(\'' + safeId + '\', \'' + safeName.replace(/'/g, '\\&#39;') + '\')">' +
+                '<i class="bi bi-trash3"></i>' +
+              '</button>' +
+              '</div>' +
+            '</div>' +
+          '</div>' +
+          '<div class="card-body px-4 pb-4 pt-4">' +
+            '<stop-manifest id="stop-manifest-' + safeId + '" ' +
+              'data-mode="list" ' +
+              'data-route-id="' + safeId + '" ' +
+              'data-waypoint-count="' + escHtml(String(m.waypointCount || 0)) + '">' +
+            '</stop-manifest>' +
+          '</div>' +
+        '</div>'
+      );
+    }
+
+    // -------------------------------------------------------------------------
+    // Render waypoints
+    // -------------------------------------------------------------------------
+    function renderWaypoints(routeId, waypoints) {
+      (waypoints || []).forEach(function (w) { _waypointCache[w.id] = w; });
+      var el = document.getElementById('stop-manifest-' + routeId);
+      if (el) el.setWaypoints(waypoints || []);
+    }
+
+    // -------------------------------------------------------------------------
+    // Load data
+    // -------------------------------------------------------------------------
+    function loadRoutes() {
+      document.getElementById('routes-container').innerHTML =
+        '<div class="card surface-card border-0 shadow-sm">' +
+          '<div class="card-body text-center py-5 text-body-secondary">' +
+            '<div class="spinner-border mb-3" role="status"><span class="visually-hidden">Loading…</span></div>' +
+            '<p class="mb-0">Loading delivery routes…</p>' +
+          '</div>' +
+        '</div>';
+
+      apiFetch('GET', API + '/routes?size=100')
+        .then(function (data) {
+          var routes = data && data.content ? data.content : [];
+          renderRoutes(routes);
+          routes.forEach(function (m) { loadWaypoints(m.id); });
+        })
+        .catch(function (e) {
+          document.getElementById('routes-container').innerHTML =
+            '<div class="alert alert-danger">' +
+            '<i class="bi bi-exclamation-triangle me-2"></i>' +
+            'Failed to load delivery routes: ' + escHtml(e.message) + '</div>';
+        });
+    }
+
+    function loadWaypoints(routeId) {
+      apiFetch('GET', API + '/routes/' + routeId + '/waypoints?size=100')
+        .then(function (data) {
+          renderWaypoints(routeId, data && data.content ? data.content : []);
+        })
+        .catch(function (e) {
+          showAlert('Failed to load stops: ' + e.message);
+          var el = document.getElementById('stop-manifest-' + routeId);
+          if (el) el.setWaypoints([]);
+        });
+    }
+
+    // -------------------------------------------------------------------------
+    // Add Route
+    // -------------------------------------------------------------------------
+    document.getElementById('add-route-form').addEventListener('submit', function (e) {
+      e.preventDefault();
+      var form = e.target;
+      if (!form.checkValidity()) { form.classList.add('was-validated'); return; }
+
+      var id = document.getElementById('m-id').value;
+      var body = {
+        name:       document.getElementById('m-name').value.trim(),
+        aircraftId: document.getElementById('m-aircraft-id').value.trim(),
+        status:     document.getElementById('m-status').value
+      };
+      var desc = document.getElementById('m-description').value.trim();
+      if (desc) body.description = desc;
+
+      var method = id ? 'PUT' : 'POST';
+      var url    = id ? API + '/routes/' + id : API + '/routes';
+      apiFetch(method, url, body)
+        .then(function () {
+          bootstrap.Modal.getInstance(document.getElementById('addRouteModal')).hide();
+          showAlert(id ? 'Delivery route updated.' : 'Delivery route created.', 'success');
+          loadRoutes();
+        })
+        .catch(function (e) { showAlert('Failed to ' + (id ? 'update' : 'create') + ' delivery route: ' + e.message); });
+    });
+
+    document.getElementById('addRouteModal').addEventListener('hidden.bs.modal', function () {
+      var f = document.getElementById('add-route-form');
+      f.reset(); f.classList.remove('was-validated');
+      document.getElementById('m-id').value = '';
+      document.getElementById('m-modal-icon').className = 'bi bi-plus-circle me-2';
+      document.getElementById('m-modal-title-text').textContent = 'Add Delivery Route';
+      document.getElementById('m-submit-text').textContent = 'Create Delivery Route';
+    });
+
+    // -------------------------------------------------------------------------
+    // Delete Route
+    // -------------------------------------------------------------------------
+    function deleteRoute(id, name) {
+      if (!confirm('Delete delivery route "' + name + '"?\nThis will also remove all its stops and cannot be undone.')) return;
+      apiFetch('DELETE', API + '/routes/' + id)
+        .then(function () {
+          showAlert('Delivery route deleted.', 'success');
+          loadRoutes();
+        })
+        .catch(function (e) { showAlert('Failed to delete delivery route: ' + e.message); });
+    }
+
+    // -------------------------------------------------------------------------
+    // Add Waypoint
+    // -------------------------------------------------------------------------
+    function openAddWaypointModal(routeId) {
+      var form = document.getElementById('add-waypoint-form');
+      form.reset(); form.classList.remove('was-validated');
+      document.getElementById('wp-route-id').value = routeId;
+      document.getElementById('wp-id').value = '';
+      document.getElementById('wp-modal-icon').className = 'bi bi-geo-alt me-2';
+      document.getElementById('wp-modal-title-text').textContent = 'Add Stop';
+      document.getElementById('wp-submit-text').textContent = 'Add Stop';
+      bootstrap.Modal.getOrCreateInstance(document.getElementById('addWaypointModal')).show();
+    }
+
+    document.getElementById('add-waypoint-form').addEventListener('submit', function (e) {
+      e.preventDefault();
+      var form = e.target;
+      if (!form.checkValidity()) { form.classList.add('was-validated'); return; }
+
+      var routeId  = document.getElementById('wp-route-id').value;
+      var waypointId = document.getElementById('wp-id').value;
+      var body = {
+        name:      document.getElementById('wp-name').value.trim(),
+        sequence:  parseInt(document.getElementById('wp-sequence').value, 10),
+        latitude:  parseFloat(document.getElementById('wp-latitude').value),
+        longitude: parseFloat(document.getElementById('wp-longitude').value),
+        altitude:  parseFloat(document.getElementById('wp-altitude').value)
+      };
+      var speed   = document.getElementById('wp-speed').value;
+      var heading = document.getElementById('wp-heading').value;
+      var hold    = document.getElementById('wp-hold-time').value;
+      if (speed   !== '') body.speed    = parseFloat(speed);
+      if (heading !== '') body.heading  = parseFloat(heading);
+      if (hold    !== '') body.holdTime = parseInt(hold, 10);
+
+      var method = waypointId ? 'PUT' : 'POST';
+      var url    = waypointId
+        ? API + '/routes/' + routeId + '/waypoints/' + waypointId
+        : API + '/routes/' + routeId + '/waypoints';
+      apiFetch(method, url, body)
+        .then(function () {
+          bootstrap.Modal.getInstance(document.getElementById('addWaypointModal')).hide();
+          showAlert(waypointId ? 'Stop updated.' : 'Stop added.', 'success');
+          loadWaypoints(routeId);
+        })
+        .catch(function (e) { showAlert('Failed to ' + (waypointId ? 'update' : 'add') + ' stop: ' + e.message); });
+    });
+
+    document.getElementById('addWaypointModal').addEventListener('hidden.bs.modal', function () {
+      var f = document.getElementById('add-waypoint-form');
+      f.reset(); f.classList.remove('was-validated');
+      document.getElementById('wp-id').value = '';
+      document.getElementById('wp-modal-icon').className = 'bi bi-geo-alt me-2';
+      document.getElementById('wp-modal-title-text').textContent = 'Add Stop';
+      document.getElementById('wp-submit-text').textContent = 'Add Stop';
+    });
+
+    // -------------------------------------------------------------------------
+    // Delete Waypoint
+    // -------------------------------------------------------------------------
+    function deleteWaypoint(routeId, waypointId, name) {
+      if (!confirm('Remove stop "' + name + '"?')) return;
+      apiFetch('DELETE', API + '/routes/' + routeId + '/waypoints/' + waypointId)
+        .then(function () {
+          showAlert('Stop removed.', 'success');
+          loadWaypoints(routeId);
+        })
+        .catch(function (e) { showAlert('Failed to remove stop: ' + e.message); });
+    }
+
+    // -------------------------------------------------------------------------
+    // Edit Route
+    // -------------------------------------------------------------------------
+    function openEditRouteModal(id) {
+      var m = _routeCache[id];
+      if (!m) { showAlert('Delivery route data not found. Try refreshing.'); return; }
+      document.getElementById('m-id').value          = id;
+      document.getElementById('m-name').value        = m.name || '';
+      document.getElementById('m-description').value = m.description || '';
+      document.getElementById('m-aircraft-id').value = m.aircraftId || '';
+      document.getElementById('m-status').value      = m.status || 'PLANNED';
+      document.getElementById('m-modal-icon').className         = 'bi bi-pencil me-2';
+      document.getElementById('m-modal-title-text').textContent = 'Edit Delivery Route';
+      document.getElementById('m-submit-text').textContent      = 'Save Changes';
+      var form = document.getElementById('add-route-form');
+      form.classList.remove('was-validated');
+      bootstrap.Modal.getOrCreateInstance(document.getElementById('addRouteModal')).show();
+    }
+
+    // -------------------------------------------------------------------------
+    // Edit Waypoint
+    // -------------------------------------------------------------------------
+    function openEditWaypointModal(routeId, waypointId) {
+      var w = _waypointCache[waypointId];
+      if (!w) { showAlert('Stop data not found. Try refreshing.'); return; }
+      var form = document.getElementById('add-waypoint-form');
+      form.reset(); form.classList.remove('was-validated');
+      document.getElementById('wp-route-id').value = routeId;
+      document.getElementById('wp-id').value         = waypointId;
+      document.getElementById('wp-name').value       = w.name || '';
+      document.getElementById('wp-sequence').value   = w.sequence != null ? w.sequence : '';
+      document.getElementById('wp-latitude').value   = w.latitude  != null ? w.latitude  : '';
+      document.getElementById('wp-longitude').value  = w.longitude != null ? w.longitude : '';
+      document.getElementById('wp-altitude').value   = w.altitude  != null ? w.altitude  : '';
+      document.getElementById('wp-speed').value      = w.speed     != null ? w.speed     : '';
+      document.getElementById('wp-heading').value    = w.heading   != null ? w.heading   : '';
+      document.getElementById('wp-hold-time').value  = w.holdTime  != null ? w.holdTime  : '';
+      document.getElementById('wp-modal-icon').className          = 'bi bi-pencil me-2';
+      document.getElementById('wp-modal-title-text').textContent  = 'Edit Stop';
+      document.getElementById('wp-submit-text').textContent       = 'Save Changes';
+      bootstrap.Modal.getOrCreateInstance(document.getElementById('addWaypointModal')).show();
+    }
+
+    // -------------------------------------------------------------------------
+    // Random data generation
+    // -------------------------------------------------------------------------
+    function rnd(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
+    function rndInt(min, max) { return Math.floor(Math.random() * (max - min + 1)) + min; }
+    function rndFloat(min, max, dp) {
+      return parseFloat((min + Math.random() * (max - min)).toFixed(dp != null ? dp : 4));
+    }
+
+    var ROUTE_PREFIX = ['Same-day parcel', 'Depot relay', 'Returns sweep', 'Priority courier', 'Evening dispatch', 'Retail restock', 'Campus courier', 'Pharmacy relay'];
+    var ROUTE_SUFFIX = ['north corridor', 'city centre loop', 'airport connector', 'west hub shuttle', 'retail belt', 'hospital network', 'suburban round', 'warehouse link'];
+    var LOGISTICS_ORIGINS = ['Birmingham sorting hub', 'Leeds parcel centre', 'Manchester cross-dock', 'Heathrow cargo depot', 'Glasgow micro-fulfilment hub', 'Cardiff dispatch warehouse'];
+    var LOGISTICS_AREAS = ['central London', 'the Midlands', 'Greater Manchester', 'South Wales', 'the Glasgow corridor', 'the northern suburbs'];
+    var ROUTE_DESC = [
+      'Collect outbound parcels from the {origin} and complete scheduled deliveries across {area}.',
+      'Run a timed pickup sweep for returns before the final handoff at the {origin}.',
+      'Lift priority consignments from the {origin} and complete {count} last-mile drops across {area}.',
+      'Balance parcel overflow between the {origin} and the local delivery depot serving {area}.',
+      'Pick up medical packages from the {origin} and deliver them on a timed route through {area}.',
+      'Collect inbound parcels from the {origin} and finish doorstep deliveries throughout {area}.'
+    ];
+    var SERVICE_AREAS = [
+      { lat: [51.45, 51.60], lon: [-0.30, 0.10] },
+      { lat: [52.40, 52.60], lon: [-1.95, -1.70] },
+      { lat: [53.35, 53.55], lon: [-2.35, -2.05] },
+      { lat: [55.82, 56.00], lon: [-4.40, -3.95] },
+      { lat: [51.42, 51.56], lon: [-3.30, -3.05] }
+    ];
+    var STOP_NAMES = ['Depot pickup', 'Locker collection', 'Retail pickup', 'Hub transfer', 'Customer delivery', 'Priority drop', 'Returns collection', 'Parcel locker drop', 'Pharmacy delivery'];
+
+    function fillRandomRoute() {
+      var name = rnd(ROUTE_PREFIX) + ' ' + rnd(ROUTE_SUFFIX);
+      var desc = rnd(ROUTE_DESC)
+        .replace('{origin}', rnd(LOGISTICS_ORIGINS))
+        .replace('{area}', rnd(LOGISTICS_AREAS))
+        .replace('{count}', rndInt(3, 8));
+      document.getElementById('m-name').value        = name;
+      document.getElementById('m-description').value = desc;
+      document.getElementById('m-aircraft-id').value = crypto.randomUUID();
+      document.getElementById('m-status').value      = 'PLANNED';
+    }
+
+    function fillRandomWaypoint() {
+      var routeId = document.getElementById('wp-route-id').value;
+      var wpArea    = routeId ? document.getElementById('waypoints-' + routeId) : null;
+      var seq       = wpArea ? wpArea.querySelectorAll('tbody tr').length + 1 : 1;
+      var t         = rnd(SERVICE_AREAS);
+      document.getElementById('wp-name').value      = rnd(STOP_NAMES) + ' ' + seq;
+      document.getElementById('wp-sequence').value  = seq;
+      document.getElementById('wp-latitude').value  = rndFloat(t.lat[0], t.lat[1], 4);
+      document.getElementById('wp-longitude').value = rndFloat(t.lon[0], t.lon[1], 4);
+      document.getElementById('wp-altitude').value  = rndInt(2, 12) * 100;
+      document.getElementById('wp-speed').value     = rndInt(8, 24) * 5;
+      document.getElementById('wp-heading').value   = rndInt(0, 359);
+      var hold = rnd([0, 60, 90, 120, 180]);
+      document.getElementById('wp-hold-time').value = hold > 0 ? hold : '';
+    }
+
+    // -------------------------------------------------------------------------
+    // Stop Manifest events
+    // -------------------------------------------------------------------------
+    document.getElementById('routes-container').addEventListener('add-stop', function (e) {
+      openAddWaypointModal(e.detail.routeId);
+    });
+    document.getElementById('routes-container').addEventListener('edit-stop', function (e) {
+      openEditWaypointModal(e.detail.routeId, e.detail.waypointId);
+    });
+    document.getElementById('routes-container').addEventListener('delete-stop', function (e) {
+      deleteWaypoint(e.detail.routeId, e.detail.waypointId, e.detail.name);
+    });
+    document.getElementById('routes-container').addEventListener('waypoints-changed', function (e) {
+      (e.detail.waypoints || []).forEach(function (w) { _waypointCache[w.id] = w; });
+      showAlert('Stop order saved.', 'success');
+    });
+    document.getElementById('routes-container').addEventListener('save-error', function (e) {
+      showAlert(e.detail.message);
+    });
+
+    // -------------------------------------------------------------------------
+    // Init
+    // -------------------------------------------------------------------------
+    loadRoutes();
+  </script>
+</body>
+</html>

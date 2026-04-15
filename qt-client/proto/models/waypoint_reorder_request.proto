@@ -1,0 +1,7 @@
+syntax = "proto3";
+
+package openapitools;
+
+message WaypointReorderRequest {
+  repeated string waypoint_ids = 231217799;
+}

@@ -1,0 +1,64 @@
+spring:
+  application:
+    name: flight-logistics
+    version: "@project.version@"
+  docker:
+    compose:
+      enabled: false
+  lifecycle:
+    timeout-per-shutdown-phase: 5s
+  neo4j:
+    uri: bolt://localhost:7687
+    authentication:
+      username: neo4j
+      password: notverysecret
+  security:
+    user:
+      name: admin
+      password: admin
+  boot:
+    admin:
+      context-path: /admin
+      client:
+        url: http://localhost:8080/admin
+        connect-timeout: 2s
+        read-timeout: 3s
+        username: admin
+        password: admin
+        instance:
+          service-base-url: http://localhost:8080
+
+server:
+  shutdown: graceful
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "*"
+  endpoint:
+    health:
+      show-details: always
+  info:
+    env:
+      enabled: true
+
+springdoc:
+  swagger-ui:
+    try-it-out-enabled: true
+
+geoserver:
+  # Use explicit IPv4 address: Docker binds port 8600 on 0.0.0.0 (IPv4 only).
+  # macOS resolves "localhost" to ::1 (IPv6) first, causing connection timeouts
+  # because nothing listens on [::1]:8600.
+  wms-url: http://127.0.0.1:8600/geoserver/wms
+
+map:
+  tile-cache:
+    dir: ${user.home}/.flight-logistics/tile-cache
+
+app:
+  demo:
+    # Load demo routes and waypoints from demo-data.json on startup.
+    # Skipped if any routes already exist in the database.
+    seed-data: true

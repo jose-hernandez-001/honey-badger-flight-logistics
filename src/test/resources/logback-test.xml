@@ -1,0 +1,11 @@
+<configuration>
+    <include resource="org/springframework/boot/logging/logback/base.xml"/>
+
+    <!--
+        Suppress Cypher query notifications about unknown labels/properties/relationship types.
+        These WARNs appear on every test run against a fresh Testcontainers database because
+        the schema (nodes, relationships, properties) does not exist until the first write.
+        They are informational Cypher plan warnings from Neo4j, not application errors.
+    -->
+    <logger name="org.springframework.data.neo4j.cypher.unrecognized" level="ERROR"/>
+</configuration>

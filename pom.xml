@@ -1,0 +1,615 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	<parent>
+		<groupId>org.springframework.boot</groupId>
+		<artifactId>spring-boot-starter-parent</artifactId>
+		<version>4.0.5</version>
+		<relativePath/> <!-- lookup parent from repository -->
+	</parent>
+	<groupId>com.honeybadger</groupId>
+	<artifactId>flight-logistics</artifactId>
+	<version>${revision}${changelist}</version>
+	<name>Honey Badger Flight Logistics</name>
+	<description>A Spring Boot application demonstrating delivery mission and waypoint management with Neo4j, GeoServer, and gRPC.</description>
+	<url>https://github.com/doraemoncito/neo4j-flight-logistics</url>
+	<licenses>
+		<license>
+			<name>MIT License</name>
+			<url>https://opensource.org/licenses/MIT</url>
+			<distribution>repo</distribution>
+		</license>
+	</licenses>
+	<developers>
+		<developer>
+			<id>doraemoncito</id>
+			<name>Honey Badger Flight Logistics</name>
+			<organization>Honey Badger Flight Logistics</organization>
+			<organizationUrl>https://github.com/doraemoncito</organizationUrl>
+		</developer>
+	</developers>
+	<scm>
+		<connection>scm:git:https://github.com/doraemoncito/neo4j-flight-logistics.git</connection>
+		<developerConnection>scm:git:git@github.com:doraemoncito/neo4j-flight-logistics.git</developerConnection>
+		<tag>HEAD</tag>
+		<url>https://github.com/doraemoncito/neo4j-flight-logistics</url>
+	</scm>
+	<properties>
+		<java.version>21</java.version>
+
+		<revision>0.0.1</revision>
+		<changelist>-SNAPSHOT</changelist>
+
+		<exec-maven-plugin.version>3.5.0</exec-maven-plugin.version>
+		<flatten-maven-plugin.version>1.7.0</flatten-maven-plugin.version>
+		<license-maven-plugin.version>4.6</license-maven-plugin.version>
+		<maven-site-plugin.version>3.21.0</maven-site-plugin.version>
+		<versions-maven-plugin.version>2.18.0</versions-maven-plugin.version>
+		<protobuf-maven-plugin.version>4.1.0</protobuf-maven-plugin.version>
+
+		<grpc.version>1.77.1</grpc.version>
+		<jackson-databind-nullable.version>0.2.6</jackson-databind-nullable.version>
+		<openapi-generator.version>7.13.0</openapi-generator.version>
+		<protobuf-java.version>4.33.4</protobuf-java.version>
+		<bootstrap.version>5.3.3</bootstrap.version>
+		<bootstrap-icons.version>1.11.3</bootstrap-icons.version>
+		<leaflet.version>1.9.4</leaflet.version>
+		<redoc.version>2.5.2</redoc.version>
+		<scalar.version>1.49.8</scalar.version>
+		<spring-grpc.version>1.0.2</spring-grpc.version>
+		<springdoc-openapi-starter-webmvc-ui.version>3.0.2</springdoc-openapi-starter-webmvc-ui.version>
+
+		<vendor.cache.dir>${user.home}/.flight-logistics/vendor-cache</vendor.cache.dir>
+
+		<cucumber.version>7.34.3</cucumber.version>
+		<jmeter-java-dsl.version>2.2</jmeter-java-dsl.version>
+		<proto.generated.dir>${project.build.directory}/generated-sources/proto</proto.generated.dir>
+		<project.resources.directory>${project.basedir}/src/main/resources</project.resources.directory>
+	</properties>
+	<dependencies>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-actuator</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-data-neo4j</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-webmvc</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>io.grpc</groupId>
+			<artifactId>grpc-services</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.springdoc</groupId>
+			<artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
+			<version>${springdoc-openapi-starter-webmvc-ui.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.grpc</groupId>
+			<artifactId>spring-grpc-server-spring-boot-starter</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-validation</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.openapitools</groupId>
+			<artifactId>jackson-databind-nullable</artifactId>
+			<version>${jackson-databind-nullable.version}</version>
+		</dependency>
+
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-devtools</artifactId>
+			<scope>runtime</scope>
+			<optional>true</optional>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-docker-compose</artifactId>
+			<scope>runtime</scope>
+			<optional>true</optional>
+		</dependency>
+		<dependency>
+			<groupId>org.projectlombok</groupId>
+			<artifactId>lombok</artifactId>
+			<optional>true</optional>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-test</artifactId>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.testcontainers</groupId>
+			<artifactId>testcontainers-neo4j</artifactId>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-testcontainers</artifactId>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>io.cucumber</groupId>
+			<artifactId>cucumber-java</artifactId>
+			<version>${cucumber.version}</version>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>io.cucumber</groupId>
+			<artifactId>cucumber-spring</artifactId>
+			<version>${cucumber.version}</version>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>io.cucumber</groupId>
+			<artifactId>cucumber-junit-platform-engine</artifactId>
+			<version>${cucumber.version}</version>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.junit.platform</groupId>
+			<artifactId>junit-platform-suite</artifactId>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.junit.platform</groupId>
+			<artifactId>junit-platform-launcher</artifactId>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>us.abstracta.jmeter</groupId>
+			<artifactId>jmeter-java-dsl</artifactId>
+			<version>${jmeter-java-dsl.version}</version>
+			<scope>test</scope>
+			<exclusions>
+				<exclusion>
+					<groupId>org.slf4j</groupId>
+					<artifactId>slf4j-api</artifactId>
+				</exclusion>
+			</exclusions>
+		</dependency>
+	</dependencies>
+	<dependencyManagement>
+		<dependencies>
+			<dependency>
+				<groupId>org.springframework.grpc</groupId>
+				<artifactId>spring-grpc-dependencies</artifactId>
+				<version>${spring-grpc.version}</version>
+				<type>pom</type>
+				<scope>import</scope>
+			</dependency>
+		</dependencies>
+	</dependencyManagement>
+
+	<build>
+		<plugins>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-enforcer-plugin</artifactId>
+				<executions>
+					<execution>
+						<id>enforce-maven-version</id>
+						<goals>
+							<goal>enforce</goal>
+						</goals>
+						<configuration>
+							<rules>
+								<requireMavenVersion>
+									<!-- protobuf-maven-plugin 4.x requires Eclipse Sisu 1.x, which is
+									     bundled only from Maven 3.9.14 onwards. Use ./mvnw to ensure
+									     the correct Maven version is used. -->
+									<version>[3.9.14,)</version>
+									<message>Maven 3.9.14 or higher is required. Run './mvnw' instead of 'mvn' to use the correct version automatically.</message>
+								</requireMavenVersion>
+							</rules>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-resources-plugin</artifactId>
+				<executions>
+					<execution>
+						<id>copy-vendor-cache</id>
+						<phase>process-resources</phase>
+						<goals>
+							<goal>copy-resources</goal>
+						</goals>
+						<configuration>
+							<outputDirectory>${project.build.outputDirectory}/static/vendor</outputDirectory>
+							<overwrite>true</overwrite>
+							<resources>
+								<resource>
+									<directory>${vendor.cache.dir}</directory>
+									<filtering>false</filtering>
+								</resource>
+							</resources>
+						</configuration>
+					</execution>
+					<execution>
+						<id>copy-sphinx-docs</id>
+						<phase>prepare-package</phase>
+						<goals>
+							<goal>copy-resources</goal>
+						</goals>
+						<configuration>
+							<outputDirectory>${project.build.outputDirectory}/static/docs</outputDirectory>
+							<overwrite>true</overwrite>
+							<resources>
+								<resource>
+									<directory>${project.build.directory}/docs/html</directory>
+									<filtering>false</filtering>
+								</resource>
+							</resources>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+			<plugin>
+				<groupId>org.codehaus.mojo</groupId>
+				<artifactId>flatten-maven-plugin</artifactId>
+				<version>${flatten-maven-plugin.version}</version>
+				<configuration>
+					<updatePomFile>true</updatePomFile>
+					<flattenMode>resolveCiFriendliesOnly</flattenMode>
+				</configuration>
+				<executions>
+					<execution>
+						<id>flatten</id>
+						<phase>process-resources</phase>
+						<goals>
+							<goal>flatten</goal>
+						</goals>
+					</execution>
+					<execution>
+						<id>flatten-clean</id>
+						<phase>clean</phase>
+						<goals>
+							<goal>clean</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-dependency-plugin</artifactId>
+				<configuration>
+					<downloadSources>true</downloadSources>
+					<downloadJavadocs>true</downloadJavadocs>
+				</configuration>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-compiler-plugin</artifactId>
+				<configuration>
+					<!-- Disable incremental compilation so every Maven build performs a full
+					     javac pass. This prevents stale/partial class files (e.g. written by
+					     the VS Code JDT background compiler between Maven's compile and test
+					     phases) from being used by Surefire. -->
+					<useIncrementalCompilation>false</useIncrementalCompilation>
+					<annotationProcessorPaths>
+						<path>
+							<groupId>org.projectlombok</groupId>
+							<artifactId>lombok</artifactId>
+						</path>
+					</annotationProcessorPaths>
+				</configuration>
+				<executions>
+					<execution>
+						<!-- Recompile main sources immediately before Surefire runs to overwrite
+						     any ECJ-compiled class files the JDT background compiler may have
+						     written to target/classes between the compile and test phases. -->
+						<id>recompile-before-test</id>
+						<phase>process-test-classes</phase>
+						<goals>
+							<goal>compile</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+			<plugin>
+				<groupId>io.github.ascopes</groupId>
+				<artifactId>protobuf-maven-plugin</artifactId>
+				<version>${protobuf-maven-plugin.version}</version>
+				<configuration>
+					<sourceDirectories>
+						<sourceDirectory>${proto.generated.dir}</sourceDirectory>
+					</sourceDirectories>
+					<protoc>${protobuf-java.version}</protoc>
+					<binaryMavenPlugins>
+						<binaryMavenPlugin>
+							<groupId>io.grpc</groupId>
+							<artifactId>protoc-gen-grpc-java</artifactId>
+							<version>${grpc.version}</version>
+							<options>@generated=omit</options>
+						</binaryMavenPlugin>
+					</binaryMavenPlugins>
+				</configuration>
+				<executions>
+					<execution>
+						<id>generate</id>
+						<goals>
+							<goal>generate</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+			<plugin>
+				<groupId>org.openapitools</groupId>
+				<artifactId>openapi-generator-maven-plugin</artifactId>
+				<version>${openapi-generator.version}</version>
+				<executions>
+					<execution>
+						<id>generate-proto</id>
+						<phase>initialize</phase>
+						<goals>
+							<goal>generate</goal>
+						</goals>
+						<configuration>
+							<inputSpec>${project.resources.directory}/static/openapi.yaml</inputSpec>
+							<generatorName>protobuf-schema</generatorName>
+							<output>${proto.generated.dir}</output>
+							<configOptions>
+								<packageName>honeybadger.flightlogistics.v1</packageName>
+							</configOptions>
+						</configuration>
+					</execution>
+					<execution>
+						<id>generate-jmeter</id>
+						<phase>generate-test-sources</phase>
+						<goals>
+							<goal>generate</goal>
+						</goals>
+						<configuration>
+							<inputSpec>${project.resources.directory}/static/openapi.yaml</inputSpec>
+							<generatorName>jmeter</generatorName>
+							<output>${project.build.directory}/jmeter</output>
+						</configuration>
+					</execution>
+					<execution>
+						<id>generate-server</id>
+						<goals>
+							<goal>generate</goal>
+						</goals>
+						<configuration>
+							<inputSpec>${project.resources.directory}/static/openapi.yaml</inputSpec>
+							<generatorName>spring</generatorName>
+							<apiPackage>com.honeybadger.flightlogistics.api</apiPackage>
+							<modelPackage>com.honeybadger.flightlogistics.model</modelPackage>
+							<ignoreFileOverride>${project.resources.directory}/.openapi-generator-ignore</ignoreFileOverride>
+							<configOptions>
+								<delegatePattern>true</delegatePattern>
+								<documentationProvider>springdoc</documentationProvider>
+								<annotationLibrary>swagger2</annotationLibrary>
+								<useSpringBoot3>true</useSpringBoot3>
+								<useJakartaEe>true</useJakartaEe>
+								<openApiNullable>true</openApiNullable>
+								<useTags>true</useTags>
+								<interfaceOnly>false</interfaceOnly>
+								<useResponseEntity>true</useResponseEntity>
+								<generateInterfaces>true</generateInterfaces>
+							</configOptions>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-antrun-plugin</artifactId>
+				<executions>
+					<execution>
+						<id>download-frontend-dependencies</id>
+						<phase>generate-resources</phase>
+						<goals>
+							<goal>run</goal>
+						</goals>
+						<configuration>
+							<target>
+								<!-- Download vendor assets to a persistent cache that survives mvn clean -->
+								<mkdir dir="${vendor.cache.dir}"/>
+								<mkdir dir="${vendor.cache.dir}/fonts"/>
+								<get src="https://cdn.jsdelivr.net/npm/bootstrap@${bootstrap.version}/dist/css/bootstrap.min.css"
+									 dest="${vendor.cache.dir}/bootstrap.min.css"
+									 skipexisting="true"/>
+								<get src="https://cdn.jsdelivr.net/npm/bootstrap@${bootstrap.version}/dist/js/bootstrap.bundle.min.js"
+									 dest="${vendor.cache.dir}/bootstrap.bundle.min.js"
+									 skipexisting="true"/>
+								<get src="https://cdn.jsdelivr.net/npm/bootstrap-icons@${bootstrap-icons.version}/font/bootstrap-icons.min.css"
+									 dest="${vendor.cache.dir}/bootstrap-icons.min.css"
+									 skipexisting="true"/>
+								<get src="https://cdn.jsdelivr.net/npm/bootstrap-icons@${bootstrap-icons.version}/font/fonts/bootstrap-icons.woff2"
+									 dest="${vendor.cache.dir}/fonts/bootstrap-icons.woff2"
+									 skipexisting="true"/>
+								<get src="https://cdn.redoc.ly/redoc/v${redoc.version}/bundles/redoc.standalone.js"
+									 dest="${vendor.cache.dir}/redoc.standalone.js"
+									 skipexisting="true"/>
+								<get src="https://cdn.jsdelivr.net/npm/@scalar/api-reference@${scalar.version}/dist/browser/standalone.js"
+									 dest="${vendor.cache.dir}/scalar.standalone.js"
+									 skipexisting="true"/>
+								<get src="https://cdn.jsdelivr.net/npm/leaflet@${leaflet.version}/dist/leaflet.min.css"
+									 dest="${vendor.cache.dir}/leaflet.min.css"
+									 skipexisting="true"/>
+								<get src="https://cdn.jsdelivr.net/npm/leaflet@${leaflet.version}/dist/leaflet.min.js"
+									 dest="${vendor.cache.dir}/leaflet.min.js"
+									 skipexisting="true"/>
+								<!-- Scalar fonts: cache all woff2 files locally so no runtime calls to fonts.scalar.com -->
+								<mkdir dir="${vendor.cache.dir}/fonts/scalar"/>
+								<get src="https://fonts.scalar.com/inter-cyrillic-ext.woff2"   dest="${vendor.cache.dir}/fonts/scalar/inter-cyrillic-ext.woff2"   skipexisting="true"/>
+								<get src="https://fonts.scalar.com/inter-cyrillic.woff2"       dest="${vendor.cache.dir}/fonts/scalar/inter-cyrillic.woff2"       skipexisting="true"/>
+								<get src="https://fonts.scalar.com/inter-greek-ext.woff2"      dest="${vendor.cache.dir}/fonts/scalar/inter-greek-ext.woff2"      skipexisting="true"/>
+								<get src="https://fonts.scalar.com/inter-greek.woff2"          dest="${vendor.cache.dir}/fonts/scalar/inter-greek.woff2"          skipexisting="true"/>
+								<get src="https://fonts.scalar.com/inter-latin-ext.woff2"      dest="${vendor.cache.dir}/fonts/scalar/inter-latin-ext.woff2"      skipexisting="true"/>
+								<get src="https://fonts.scalar.com/inter-latin.woff2"          dest="${vendor.cache.dir}/fonts/scalar/inter-latin.woff2"          skipexisting="true"/>
+								<get src="https://fonts.scalar.com/inter-symbols.woff2"        dest="${vendor.cache.dir}/fonts/scalar/inter-symbols.woff2"        skipexisting="true"/>
+								<get src="https://fonts.scalar.com/inter-vietnamese.woff2"     dest="${vendor.cache.dir}/fonts/scalar/inter-vietnamese.woff2"     skipexisting="true"/>
+								<get src="https://fonts.scalar.com/mono-cyrillic-ext.woff2"    dest="${vendor.cache.dir}/fonts/scalar/mono-cyrillic-ext.woff2"    skipexisting="true"/>
+								<get src="https://fonts.scalar.com/mono-cyrillic.woff2"        dest="${vendor.cache.dir}/fonts/scalar/mono-cyrillic.woff2"        skipexisting="true"/>
+								<get src="https://fonts.scalar.com/mono-greek.woff2"           dest="${vendor.cache.dir}/fonts/scalar/mono-greek.woff2"           skipexisting="true"/>
+								<get src="https://fonts.scalar.com/mono-latin-ext.woff2"       dest="${vendor.cache.dir}/fonts/scalar/mono-latin-ext.woff2"       skipexisting="true"/>
+								<get src="https://fonts.scalar.com/mono-latin.woff2"           dest="${vendor.cache.dir}/fonts/scalar/mono-latin.woff2"           skipexisting="true"/>
+								<get src="https://fonts.scalar.com/mono-vietnamese.woff2"      dest="${vendor.cache.dir}/fonts/scalar/mono-vietnamese.woff2"      skipexisting="true"/>
+								<!-- Rewrite font URLs in the cached bundle to point to local paths (idempotent) -->
+								<replace file="${vendor.cache.dir}/scalar.standalone.js"
+										 token="https://fonts.scalar.com/"
+										 value="/vendor/fonts/scalar/"/>
+							</target>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-failsafe-plugin</artifactId>
+				<executions>
+					<execution>
+						<goals>
+							<goal>integration-test</goal>
+							<goal>verify</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+			<plugin>
+				<groupId>org.springframework.boot</groupId>
+				<artifactId>spring-boot-maven-plugin</artifactId>
+				<configuration>
+					<mainClass>com.honeybadger.flightlogistics.FlightLogisticsApplication</mainClass>
+					<excludes>
+						<exclude>
+							<groupId>org.projectlombok</groupId>
+							<artifactId>lombok</artifactId>
+						</exclude>
+					</excludes>
+				</configuration>
+			</plugin>
+			<plugin>
+				<groupId>com.mycila</groupId>
+				<artifactId>license-maven-plugin</artifactId>
+				<version>${license-maven-plugin.version}</version>
+				<configuration>
+					<licenseSets>
+						<licenseSet>
+							<header>com/mycila/maven/plugin/license/templates/MIT.txt</header>
+							<properties>
+								<owner>José Hernández</owner>
+								<year>2026</year>
+							</properties>
+							<includes>
+								<include>src/main/java/**/*.java</include>
+								<include>src/test/java/**/*.java</include>
+							</includes>
+						</licenseSet>
+					</licenseSets>
+				</configuration>
+				<executions>
+					<execution>
+						<id>check-license-headers</id>
+						<phase>verify</phase>
+						<goals>
+							<goal>check</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+			<plugin>
+				<groupId>org.codehaus.mojo</groupId>
+				<artifactId>versions-maven-plugin</artifactId>
+				<version>${versions-maven-plugin.version}</version>
+				<configuration>
+					<generateBackupPoms>false</generateBackupPoms>
+				</configuration>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-site-plugin</artifactId>
+				<version>${maven-site-plugin.version}</version>
+				<configuration>
+					<!-- Suppress the default Maven site; only Sphinx output is published -->
+					<generateReports>false</generateReports>
+					<generateProjectInfo>false</generateProjectInfo>
+				</configuration>
+			</plugin>
+			<plugin>
+				<groupId>org.codehaus.mojo</groupId>
+				<artifactId>exec-maven-plugin</artifactId>
+				<version>${exec-maven-plugin.version}</version>
+				<executions>
+					<execution>
+						<id>docker-compose-up</id>
+						<phase>initialize</phase>
+						<goals>
+							<goal>exec</goal>
+						</goals>
+						<configuration>
+							<executable>docker</executable>
+							<arguments>
+								<argument>compose</argument>
+								<argument>up</argument>
+								<argument>--detach</argument>
+								<argument>--wait</argument>
+								<argument>--no-recreate</argument>
+								<argument>neo4j</argument>
+								<argument>geoserver</argument>
+							</arguments>
+						</configuration>
+					</execution>
+					<execution>
+						<id>install-sphinx</id>
+						<phase>pre-site</phase>
+						<goals>
+							<goal>exec</goal>
+						</goals>
+						<configuration>
+							<executable>python3</executable>
+							<arguments>
+								<argument>-m</argument>
+								<argument>venv</argument>
+								<argument>${project.build.directory}/docs-venv</argument>
+							</arguments>
+						</configuration>
+					</execution>
+					<execution>
+						<id>pip-install-sphinx</id>
+						<phase>pre-site</phase>
+						<goals>
+							<goal>exec</goal>
+						</goals>
+						<configuration>
+							<executable>${project.build.directory}/docs-venv/bin/pip</executable>
+							<arguments>
+								<argument>install</argument>
+								<argument>-r</argument>
+								<argument>docs/requirements.txt</argument>
+							</arguments>
+						</configuration>
+					</execution>
+					<execution>
+						<id>build-docs</id>
+						<phase>site</phase>
+						<goals>
+							<goal>exec</goal>
+						</goals>
+						<configuration>
+							<executable>${project.build.directory}/docs-venv/bin/sphinx-build</executable>
+							<arguments>
+								<argument>-b</argument>
+								<argument>html</argument>
+								<argument>docs</argument>
+								<argument>${project.build.directory}/docs/html</argument>
+							</arguments>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+		</plugins>
+	</build>
+
+</project>

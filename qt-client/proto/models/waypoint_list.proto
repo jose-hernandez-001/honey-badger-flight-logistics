@@ -1,0 +1,9 @@
+syntax = "proto3";
+
+package openapitools;
+
+import public "models/waypoint.proto";
+
+message WaypointList {
+  repeated Waypoint waypoints = 241170578;
+}

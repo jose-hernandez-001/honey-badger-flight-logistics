@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en" data-bs-theme="light">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Honey Badger Flight Logistics API – ReDoc</title>
+  <link rel="icon" href="/img/favicon.svg" type="image/svg+xml" />
+  <link rel="stylesheet" href="/vendor/bootstrap.min.css" />
+  <link rel="stylesheet" href="/vendor/bootstrap-icons.min.css" />
+  <link rel="stylesheet" href="/css/app.css" />
+</head>
+<body class="bg-body-tertiary">
+  <nav class="navbar bg-body shadow-sm mb-4">
+    <div class="container-fluid">
+      <a class="navbar-brand fw-bold" href="/"><i class="bi bi-airplane me-2"></i>Honey Badger Flight Logistics</a>
+      <button id="theme-toggle" class="btn btn-sm btn-outline-secondary ms-auto" title="Toggle theme" onclick="toggleTheme()">
+        <i class="bi bi-moon-stars-fill" id="theme-icon"></i>
+      </button>
+    </div>
+  </nav>
+
+  <main class="container-fluid pb-4">
+    <div class="d-flex align-items-start justify-content-between gap-3 flex-wrap mb-3">
+      <div>
+        <nav aria-label="breadcrumb" class="mb-2">
+          <ol class="breadcrumb small mb-0">
+            <li class="breadcrumb-item"><a href="/" class="link-secondary text-decoration-none">Home</a></li>
+            <li class="breadcrumb-item">API Documentation</li>
+            <li class="breadcrumb-item active" aria-current="page">ReDoc</li>
+          </ol>
+        </nav>
+        <h1 class="h3 fw-bold mb-1"><i class="bi bi-book me-2"></i>ReDoc</h1>
+        <p class="text-body-secondary mb-0">Offline API reference rendered inside the app shell.</p>
+      </div>
+      <a href="/v3/api-docs" class="btn btn-sm btn-outline-secondary" target="_blank" rel="noopener noreferrer">
+        <i class="bi bi-filetype-json me-1"></i>OpenAPI JSON
+      </a>
+    </div>
+
+    <div class="bg-body rounded shadow-sm overflow-hidden">
+  <!--
+    The ReDoc bundle is served from /vendor/redoc.standalone.js, which is downloaded
+    from cdn.redoc.ly at build time by the maven-antrun-plugin (prepare-package phase)
+    and packaged inside the JAR. No CDN requests are made at runtime.
+
+    The `theme` attribute overrides ReDoc's default typography so that it uses the
+    operating system's native font stack instead of loading Montserrat and Roboto Mono
+    from Google Fonts. This eliminates the only remaining external network request
+    that ReDoc makes, making this page fully self-contained and offline-capable.
+  -->
+  <redoc
+    spec-url="/v3/api-docs"
+    expand-responses="200,201"
+    theme='{
+      "typography": {
+        "fontFamily": "system-ui, -apple-system, BlinkMacSystemFont, \"Segoe UI\", sans-serif",
+        "headings": {
+          "fontFamily": "system-ui, -apple-system, BlinkMacSystemFont, \"Segoe UI\", sans-serif"
+        },
+        "code": {
+          "fontFamily": "ui-monospace, SFMono-Regular, Menlo, Consolas, monospace"
+        }
+      }
+    }'
+    class="d-block"
+  ></redoc>
+    </div>
+  </main>
+
+  <script src="/vendor/bootstrap.bundle.min.js"></script>
+  <script src="/js/app.js"></script>
+  <script src="/vendor/redoc.standalone.js"></script>
+</body>
+</html>

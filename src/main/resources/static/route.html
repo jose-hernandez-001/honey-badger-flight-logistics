@@ -1,0 +1,840 @@
+<!DOCTYPE html>
+<html lang="en" data-bs-theme="light">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Delivery Route — Honey Badger Flight Logistics</title>
+  <link rel="icon" href="/img/favicon.svg" type="image/svg+xml" />
+  <link rel="stylesheet" href="/vendor/bootstrap.min.css" />
+  <link rel="stylesheet" href="/vendor/bootstrap-icons.min.css" />
+  <link rel="stylesheet" href="/vendor/leaflet.min.css" />
+  <link rel="stylesheet" href="/css/app.css" />
+</head>
+<body class="bg-body-tertiary app-shell route-page-body">
+
+  <div id="alert-area" class="toast-container app-toast-stack position-fixed bottom-0 end-0 p-3"></div>
+
+  <!-- Navbar -->
+  <nav class="navbar bg-body shadow-sm mb-4">
+    <div class="container-fluid">
+      <a class="navbar-brand fw-bold" href="/"><i class="bi bi-airplane me-2"></i>Honey Badger Flight Logistics</a>
+      <button id="theme-toggle" class="btn btn-sm btn-outline-secondary ms-auto"
+              title="Toggle theme" onclick="toggleTheme()">
+        <i class="bi bi-moon-stars-fill" id="theme-icon"></i>
+      </button>
+    </div>
+  </nav>
+
+  <div class="container-xl pb-5">
+
+    <!-- Loading / error -->
+    <div id="loading" class="card surface-card border-0 text-center py-5 text-body-secondary">
+      <div class="card-body">
+        <div class="spinner-border mb-3" role="status"><span class="visually-hidden">Loading…</span></div>
+        <p class="mb-0">Loading route…</p>
+      </div>
+    </div>
+
+    <!-- Main content (shown after load) -->
+    <div id="content" class="d-none">
+
+      <nav aria-label="breadcrumb" class="mb-3">
+        <ol class="breadcrumb small mb-0">
+          <li class="breadcrumb-item"><a href="/" class="link-secondary text-decoration-none"><i class="bi bi-house me-1"></i>Home</a></li>
+          <li class="breadcrumb-item"><a href="/routes.html" class="link-secondary text-decoration-none"><i class="bi bi-map me-1"></i>Delivery Routes</a></li>
+          <li id="route-breadcrumb-current" class="breadcrumb-item active" aria-current="page"><i class="bi bi-box-seam me-1"></i>Delivery Route</li>
+        </ol>
+      </nav>
+
+      <!-- Route header card -->
+      <div class="card page-hero has-hero-image has-box-figure surface-card border-0 mb-4">
+        <div class="card-body p-3 p-lg-4">
+          <div class="d-flex align-items-start justify-content-between gap-3 flex-wrap">
+            <div class="min-w-0 flex-grow-1">
+              <div class="d-flex align-items-center gap-2 flex-wrap mb-3">
+                <span id="route-status" class="badge rounded-2 shadow-sm fs-6 fw-bold d-inline-flex align-items-center justify-content-center align-self-start text-center text-nowrap px-3 py-2"></span>
+                <span class="page-kicker"><i class="bi bi-box-seam"></i>Delivery Route</span>
+              </div>
+              <h1 id="route-name" class="display-6 fw-bold mb-2 text-body-emphasis"></h1>
+              <p id="route-description" class="text-body-secondary fs-6 mb-0 d-none"></p>
+              <div class="d-flex flex-wrap gap-2 mt-4">
+                <span class="meta-chip" title="Drone ID"><i class="bi bi-airplane"></i><span id="route-aircraft" class="font-monospace"></span></span>
+                <span class="meta-chip" title="Stop count"><i class="bi bi-pin-map"></i><span><span id="route-wpcount"></span> stops</span></span>
+                <span class="meta-chip" title="Created"><i class="bi bi-calendar-plus"></i><span id="route-created"></span></span>
+                <span class="meta-chip" title="Last updated"><i class="bi bi-clock-history"></i><span id="route-updated"></span></span>
+              </div>
+            </div>
+            <button class="btn btn-outline-secondary shadow-sm px-3"
+                    data-bs-toggle="modal" data-bs-target="#editRouteModal">
+              <i class="bi bi-pencil me-1"></i>Edit
+            </button>
+          </div>
+        </div>
+        <img class="page-hero-figure page-hero-figure-box" src="/img/parcel.svg" alt="" aria-hidden="true" />
+      </div>
+
+      <!-- Map card -->
+      <div class="card surface-card border-0 mb-4">
+        <div class="card-header bg-transparent border-0 px-4 pt-4 pb-0">
+          <div class="d-flex align-items-start justify-content-between gap-3 flex-wrap">
+            <div>
+              <div class="page-kicker mb-2"><i class="bi bi-radar"></i>Delivery Route</div>
+              <h2 class="h5 fw-bold mb-1"><i class="bi bi-map me-2"></i>Parcel Route</h2>
+              <p class="text-body-secondary small mb-0">Inspect pickup and drop-off stops visually and drag stop markers to refine their coordinates directly on the map.</p>
+            </div>
+            <div class="d-flex align-items-center gap-2 flex-wrap">
+            <span class="small text-body-secondary"><i class="bi bi-arrows-move me-1"></i>Drag markers to move stops</span>
+            <button class="btn btn-sm btn-outline-secondary" onclick="fitMap()" title="Reset view">
+              <i class="bi bi-arrows-fullscreen"></i>
+            </button>
+          </div>
+        </div>
+        </div>
+        <div class="card-body px-4 pb-4 pt-3">
+          <div id="map" class="map-container rounded-2 border border-secondary-subtle"></div>
+        </div>
+      </div>
+
+      <!-- Stop manifest component -->
+      <div class="card surface-card border-0">
+        <div class="card-body p-4">
+          <stop-manifest id="stop-manifest" data-mode="list"></stop-manifest>
+        </div>
+      </div>
+
+    </div><!-- /#content -->
+  </div><!-- /.container-xl -->
+
+  <!-- =========================================================================
+       Edit Route Modal
+       ========================================================================= -->
+  <div class="modal fade" id="editRouteModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title"><i class="bi bi-pencil me-2"></i>Edit Delivery Route</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <form id="edit-route-form" novalidate>
+          <div class="modal-body">
+            <div class="mb-3">
+              <label for="em-name" class="form-label fw-semibold">
+                Name <span class="text-danger">*</span>
+              </label>
+              <input type="text" class="form-control" id="em-name" required maxlength="100" />
+              <div class="invalid-feedback">Name is required (max 100 characters).</div>
+            </div>
+            <div class="mb-3">
+              <label for="em-description" class="form-label fw-semibold">Description</label>
+              <textarea class="form-control" id="em-description" rows="2" maxlength="1000"></textarea>
+            </div>
+            <div class="mb-3">
+              <label for="em-aircraft-id" class="form-label fw-semibold">
+                Drone ID <span class="text-danger">*</span>
+              </label>
+              <input type="text" class="form-control font-monospace" id="em-aircraft-id" required
+                     pattern="[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}"
+                     placeholder="a1b2c3d4-e5f6-7890-abcd-ef1234567890" />
+              <div class="invalid-feedback">A valid UUID is required.</div>
+            </div>
+            <div class="mb-3">
+              <label for="em-status" class="form-label fw-semibold">Status</label>
+              <select class="form-select" id="em-status">
+                <option value="PLANNED">PLANNED</option>
+                <option value="ACTIVE">ACTIVE</option>
+                <option value="PAUSED">PAUSED</option>
+                <option value="COMPLETED">COMPLETED</option>
+                <option value="ABORTED">ABORTED</option>
+              </select>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+            <button type="submit" class="btn btn-primary">
+              <i class="bi bi-check-lg me-1"></i>Save Changes
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- =========================================================================
+       Add / Edit Waypoint Modal
+       ========================================================================= -->
+  <div class="modal fade" id="addWaypointModal" tabindex="-1"
+       aria-labelledby="addWaypointModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="addWaypointModalLabel">
+            <i id="wp-modal-icon" class="bi bi-geo-alt me-2"></i><span id="wp-modal-title-text">Add Stop</span>
+          </h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <form id="add-waypoint-form" novalidate>
+          <input type="hidden" id="wp-route-id" />
+          <input type="hidden" id="wp-id" />
+          <div class="modal-body">
+            <div class="row g-3">
+              <div class="col-sm-8">
+                <label for="wp-name" class="form-label fw-semibold">
+                  Name <span class="text-danger">*</span>
+                </label>
+                <input type="text" class="form-control" id="wp-name" required maxlength="100"
+                       placeholder="Depot Pickup 1" />
+                <div class="invalid-feedback">Name is required (max 100 characters).</div>
+              </div>
+              <div class="col-sm-4">
+                <label for="wp-sequence" class="form-label fw-semibold">
+                  Stop Order <span class="text-danger">*</span>
+                </label>
+                <input type="number" class="form-control" id="wp-sequence" required min="1"
+                       placeholder="1" />
+                <div class="invalid-feedback">Sequence &ge; 1 is required.</div>
+              </div>
+              <div class="col-sm-4">
+                <label for="wp-latitude" class="form-label fw-semibold">
+                  Latitude <span class="text-danger">*</span>
+                </label>
+                <input type="number" class="form-control" id="wp-latitude" required
+                       step="any" min="-90" max="90" placeholder="51.5074" />
+                <div class="invalid-feedback">&minus;90 to +90.</div>
+              </div>
+              <div class="col-sm-4">
+                <label for="wp-longitude" class="form-label fw-semibold">
+                  Longitude <span class="text-danger">*</span>
+                </label>
+                <input type="number" class="form-control" id="wp-longitude" required
+                       step="any" min="-180" max="180" placeholder="-0.1278" />
+                <div class="invalid-feedback">&minus;180 to +180.</div>
+              </div>
+              <div class="col-sm-4">
+                <label for="wp-altitude" class="form-label fw-semibold">
+                  Cruise Altitude (m AMSL) <span class="text-danger">*</span>
+                </label>
+                <input type="number" class="form-control" id="wp-altitude" required
+                       step="any" placeholder="3000" />
+                <div class="invalid-feedback">Required.</div>
+              </div>
+              <div class="col-sm-4">
+                <label for="wp-speed" class="form-label fw-semibold">Cruise Speed (kts)</label>
+                <input type="number" class="form-control" id="wp-speed"
+                       step="any" min="0" placeholder="250" />
+              </div>
+              <div class="col-sm-4">
+                <label for="wp-heading" class="form-label fw-semibold">Approach Heading (&deg;)</label>
+                <input type="number" class="form-control" id="wp-heading"
+                       step="any" min="0" max="360" placeholder="045" />
+              </div>
+              <div class="col-sm-4">
+                <label for="wp-hold-time" class="form-label fw-semibold">Service Time (s)</label>
+                <input type="number" class="form-control" id="wp-hold-time"
+                       min="0" placeholder="120" />
+              </div>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-outline-secondary me-auto" onclick="fillRandomWaypoint()">
+              <i class="bi bi-shuffle me-1"></i>Random
+            </button>
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+            <button type="submit" class="btn btn-primary">
+              <i class="bi bi-check-lg me-1"></i><span id="wp-submit-text">Add Stop</span>
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <script src="/vendor/bootstrap.bundle.min.js"></script>
+  <script src="/vendor/leaflet.min.js"></script>
+  <script src="/js/app.js"></script>
+  <script src="/js/route-map-config.js"></script>
+  <script src="/js/stop-manifest.js"></script>
+  <script>
+    'use strict';
+
+    // -------------------------------------------------------------------------
+    // Config
+    // -------------------------------------------------------------------------
+    var API          = '/api/v1';
+    var AUTH         = 'Basic ' + btoa('admin:admin');
+    var JSON_HEADERS = { 'Content-Type': 'application/json', 'Authorization': AUTH };
+    var READ_HEADERS = { 'Authorization': AUTH };
+    var MAP_CONFIG   = window.ROUTE_MAP_CONFIG;
+
+    if (!MAP_CONFIG) {
+      throw new Error('ROUTE_MAP_CONFIG is required');
+    }
+
+    var STATUS_CLASS = {
+      PLANNED:   'bg-secondary',
+      ACTIVE:    'bg-success',
+      PAUSED:    'bg-warning text-dark',
+      COMPLETED: 'bg-primary',
+      ABORTED:   'bg-danger'
+    };
+
+    var _route       = null;
+    var _waypoints     = [];
+    var _waypointCache = {};
+    var _map           = null;
+    var _wpLayer   = null;
+    var _polyline  = null;
+    var _bounds    = null;
+    var _activeWaypointPopover = null;
+    var _markerPopovers = [];
+
+    // -------------------------------------------------------------------------
+    // Helpers
+    // -------------------------------------------------------------------------
+    function escHtml(s) {
+      return String(s)
+        .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+    }
+    function fmt(n) {
+      return n != null ? parseFloat(n).toFixed(4).replace(/\.?0+$/, '') : '—';
+    }
+    function fmtDate(s) {
+      if (!s) return '—';
+      var d = new Date(s);
+      return d.toLocaleDateString() + ' ' + d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    }
+    function showAlert(type, msg) {
+      showAppToast({ type: type, message: msg, html: true, containerId: 'alert-area' });
+    }
+
+    // -------------------------------------------------------------------------
+    // URL
+    // -------------------------------------------------------------------------
+    function getRouteId() {
+      return new URLSearchParams(window.location.search).get('id');
+    }
+
+    // -------------------------------------------------------------------------
+    // API fetch
+    // -------------------------------------------------------------------------
+    function apiFetch(method, url, body) {
+      var opts = { method: method };
+      if (body !== undefined) {
+        opts.headers = JSON_HEADERS;
+        opts.body    = JSON.stringify(body);
+      } else {
+        opts.headers = READ_HEADERS;
+      }
+      return fetch(url, opts).then(function (r) {
+        if (r.status === 204) return null;
+        if (!r.ok) return r.text().then(function (t) { throw new Error(r.status + ': ' + t); });
+        return r.json();
+      });
+    }
+
+    // -------------------------------------------------------------------------
+    // Map
+    // -------------------------------------------------------------------------
+    function initMap() {
+      _map = L.map('map', { zoomControl: true });
+
+      // Wrap L.tileLayer.wms() to attach automatic retry on 503 / network error.
+      // The proxy returns 503 when all upstream permits are busy; retrying after a
+      // short back-off gives the permit pool a chance to drain between tile bursts.
+      function addWmsLayer(options) {
+        var layer = L.tileLayer.wms(MAP_CONFIG.wmsUrl, Object.assign({}, options));
+        layer.on('tileerror', function (evt) {
+          var tile = evt.tile;
+          var retries = tile._retries || 0;
+          if (retries >= 3) return;
+          tile._retries = retries + 1;
+          var url = tile.src;   // capture the failing WMS URL now
+          setTimeout(function () {
+            // Guard: if the tile was recycled and given a different src, skip.
+            if (tile.src !== url) return;
+            // removeAttribute avoids the spurious onerror that tile.src='' triggers
+            // (setting src to '' resolves to the page URL, fires onerror, and wastes
+            // a retry count before the real WMS request even has a chance to succeed).
+            tile.removeAttribute('src');
+            tile.src = url;
+          }, 600 * tile._retries);
+        });
+        return layer;
+      }
+
+      // Land layer on transparent tiles so the map background can represent sea.
+      addWmsLayer(MAP_CONFIG.layers.land).addTo(_map);
+
+      // Borders and coastline sit above the land tint.
+      addWmsLayer(MAP_CONFIG.layers.boundaries).addTo(_map);
+
+      // Airport overlay (transparent, on top)
+      addWmsLayer(MAP_CONFIG.layers.airports).addTo(_map);
+
+      _wpLayer = L.layerGroup().addTo(_map);
+      _map.on('click movestart zoomstart', hideActiveWaypointPopover);
+      _map.fitBounds(MAP_CONFIG.bounds);
+      // Re-read the container's dimensions in case it was inside a display:none
+      // ancestor when constructed; ensures tiles are requested at the right size.
+      _map.invalidateSize();
+    }
+
+    function hideActiveWaypointPopover() {
+      if (_activeWaypointPopover) {
+        _activeWaypointPopover.hide();
+        _activeWaypointPopover = null;
+      }
+    }
+
+    function disposeWaypointPopovers() {
+      hideActiveWaypointPopover();
+      _markerPopovers.forEach(function (popover) {
+        popover.dispose();
+      });
+      _markerPopovers = [];
+    }
+
+    function attachWaypointPopover(marker, title, content) {
+      var markerElement = marker.getElement();
+      if (!markerElement) return;
+
+      markerElement.setAttribute('tabindex', '0');
+      markerElement.setAttribute('role', 'button');
+      markerElement.setAttribute('aria-label', marker.options.title || 'Stop');
+
+      var popover = new bootstrap.Popover(markerElement, {
+        container: 'body',
+        trigger: 'manual',
+        placement: 'top',
+        html: true,
+        sanitize: false,
+        title: title,
+        content: content
+      });
+
+      _markerPopovers.push(popover);
+
+      marker.on('click', function (event) {
+        if (event.originalEvent) {
+          L.DomEvent.stop(event.originalEvent);
+        }
+
+        var shouldOpen = _activeWaypointPopover !== popover;
+        hideActiveWaypointPopover();
+
+        if (shouldOpen) {
+          popover.show();
+          _activeWaypointPopover = popover;
+        }
+      });
+
+      marker.on('dragstart', hideActiveWaypointPopover);
+    }
+
+    function makeWpIcon(seq, isFirst, isLast) {
+      var colorClass = isFirst ? 'bg-success' : (isLast ? 'bg-danger' : 'bg-primary');
+      return L.divIcon({
+        html:        '<div class="wp-marker rounded-circle border border-2 border-white shadow d-flex align-items-center justify-content-center fw-bold text-white ' + colorClass + '">' + seq + '</div>',
+        className:   '',
+        iconSize:    [26, 26],
+        iconAnchor:  [13, 13],
+        popupAnchor: [0, -15]
+      });
+    }
+
+    function fitMap() {
+      if (!_map) return;
+      // Unconditionally fit to the route's own bounds (or UK if none). The
+      // user explicitly requested this view, so we show it regardless of zoom.
+      _map.fitBounds((_bounds && _bounds.isValid()) ? _bounds : MAP_CONFIG.bounds, { padding: [40, 40] });
+    }
+
+    function replaceWaypoint(updatedWaypoint) {
+      _waypoints = (_waypoints || []).map(function (waypoint) {
+        return waypoint.id === updatedWaypoint.id ? updatedWaypoint : waypoint;
+      });
+    }
+
+    function buildWaypointRequest(waypoint, overrides) {
+      var values = Object.assign({}, waypoint, overrides || {});
+      var body = {
+        name: values.name,
+        sequence: values.sequence,
+        latitude: values.latitude,
+        longitude: values.longitude,
+        altitude: values.altitude
+      };
+      if (values.speed != null) body.speed = values.speed;
+      if (values.heading != null) body.heading = values.heading;
+      if (values.holdTime != null) body.holdTime = values.holdTime;
+      return body;
+    }
+
+    function updateWaypointLocation(waypointId, latlng) {
+      var existingWaypoint = (_waypoints || []).find(function (waypoint) { return waypoint.id === waypointId; });
+      if (!existingWaypoint || !_route) return Promise.resolve();
+
+      return apiFetch(
+        'PUT',
+        API + '/routes/' + _route.id + '/waypoints/' + waypointId,
+        buildWaypointRequest(existingWaypoint, {
+          latitude: latlng.lat,
+          longitude: latlng.lng
+        })
+      ).then(function (updatedWaypoint) {
+        replaceWaypoint(updatedWaypoint);
+        _waypointCache[updatedWaypoint.id] = updatedWaypoint;
+        document.getElementById('stop-manifest').setWaypoints(_waypoints);
+        renderMapWaypoints(_waypoints, { preserveView: true });
+      });
+    }
+
+    function renderMapWaypoints(waypoints, options) {
+      options = options || {};
+      if (!_map) return;
+      disposeWaypointPopovers();
+      _wpLayer.clearLayers();
+      if (_polyline) { _map.removeLayer(_polyline); _polyline = null; }
+      if (!waypoints || waypoints.length === 0) return;
+
+      var sorted = (waypoints || []).slice().sort(function (a, b) { return (a.sequence || 0) - (b.sequence || 0); });
+
+      var latlngs = sorted.map(function (w) { return [w.latitude, w.longitude]; });
+      _bounds = L.latLngBounds(latlngs);
+
+      // Dashed polyline connecting waypoints in sequence order
+      _polyline = L.polyline(latlngs, Object.assign({}, MAP_CONFIG.routeLine)).addTo(_map);
+
+      // Numbered markers
+      sorted.forEach(function (w, i) {
+        var isFirst = (i === 0);
+        var isLast  = (i === sorted.length - 1);
+        var detailRows = [
+          ['Stop', String(w.sequence)],
+          ['Lat', fmt(w.latitude) + '°'],
+          ['Lon', fmt(w.longitude) + '°'],
+          ['Altitude', fmt(w.altitude) + ' m']
+        ];
+        if (w.speed != null) detailRows.push(['Speed', fmt(w.speed) + ' kt']);
+        if (w.heading != null) detailRows.push(['Course', fmt(w.heading) + '°']);
+        if (w.holdTime) detailRows.push(['Service', w.holdTime + ' s']);
+        var popoverTitle =
+          '<span class="d-inline-flex align-items-center gap-2">' +
+            '<i class="bi bi-geo-alt"></i>' +
+            '<span class="fw-bold">' + escHtml(w.name) + '</span>' +
+          '</span>';
+        var popup =
+          '<div class="small">' +
+            '<table class="table table-sm table-borderless mb-0 align-middle">' +
+              '<tbody>' +
+                detailRows.map(function (row) {
+                  return '<tr>' +
+                    '<th scope="row" class="ps-0 pe-3 py-0 text-body-secondary fw-semibold">' + escHtml(row[0]) + '</th>' +
+                    '<td class="pe-0 py-0 text-end text-body-emphasis">' + escHtml(row[1]) + '</td>' +
+                  '</tr>';
+                }).join('') +
+              '</tbody>' +
+            '</table>' +
+            '<hr class="my-2">' +
+            '<div class="text-body-secondary mt-1">Drag marker to reposition this stop</div>' +
+          '</div>';
+        var marker = L.marker([w.latitude, w.longitude], {
+          icon: makeWpIcon(w.sequence, isFirst, isLast),
+          draggable: true,
+          autoPan: true,
+          title: w.name
+        })
+          .addTo(_wpLayer);
+
+        attachWaypointPopover(marker, popoverTitle, popup);
+
+        marker.on('dragend', function (event) {
+          var movedLatLng = event.target.getLatLng();
+          updateWaypointLocation(w.id, movedLatLng)
+            .catch(function (error) {
+              renderMapWaypoints(_waypoints, { preserveView: true });
+              showAlert('danger', '<i class="bi bi-exclamation-triangle me-2"></i>' + escHtml('Failed to move stop: ' + error.message));
+            });
+        });
+      });
+
+      if (!options.preserveView) {
+        // Auto-fit: apply a zoom floor so that test/bad data scattered across
+        // continents doesn't produce a near-empty map on initial load.
+        // (fitMap() skips this check so the reset button always shows waypoints.)
+        var _pad = [40, 40];
+        var _autoTarget = (_bounds && _bounds.isValid()) ? _bounds : MAP_CONFIG.bounds;
+        if (_map.getBoundsZoom(_autoTarget, false, L.point(_pad[0], _pad[1])) < 5) {
+          _map.fitBounds(MAP_CONFIG.bounds, { padding: _pad });
+        } else {
+          fitMap();
+        }
+      }
+    }
+
+    // -------------------------------------------------------------------------
+    // Render route header
+    // -------------------------------------------------------------------------
+    function renderRoute(m) {
+      document.title = m.name + ' — Honey Badger Flight Logistics';
+      document.getElementById('route-name').textContent = m.name;
+      document.getElementById('route-breadcrumb-current').innerHTML = '<i class="bi bi-box-seam me-1"></i>' + m.name;
+
+      var descEl = document.getElementById('route-description');
+      if (m.description) {
+        descEl.textContent = m.description;
+        descEl.classList.remove('d-none');
+      } else {
+        descEl.classList.add('d-none');
+      }
+
+      var badge = document.getElementById('route-status');
+      badge.textContent = m.status;
+      badge.className   = 'badge rounded-2 shadow-sm fs-6 fw-bold d-inline-flex align-items-center justify-content-center align-self-start text-center text-nowrap px-3 py-2 ' + (STATUS_CLASS[m.status] || 'bg-secondary');
+
+      document.getElementById('route-aircraft').textContent = m.aircraftId || '—';
+      document.getElementById('route-wpcount').textContent  = m.waypointCount != null ? m.waypointCount : 0;
+      document.getElementById('route-created').textContent  = fmtDate(m.createdAt);
+      document.getElementById('route-updated').textContent  = fmtDate(m.updatedAt);
+    }
+
+    // -------------------------------------------------------------------------
+    // Load
+    // -------------------------------------------------------------------------
+    function load() {
+      var id = getRouteId();
+      if (!id) {
+        document.getElementById('loading').innerHTML =
+          '<div class="alert alert-danger">' +
+          '<i class="bi bi-exclamation-triangle me-2"></i>' +
+          'No delivery route ID specified. <a href="/routes.html">Go to Delivery Routes</a></div>';
+        return;
+      }
+
+      Promise.all([
+        apiFetch('GET', API + '/routes/' + id),
+        apiFetch('GET', API + '/routes/' + id + '/waypoints?size=100&sort=sequence,asc')
+      ]).then(function (results) {
+        _route   = results[0];
+        _waypoints = results[1] && results[1].content ? results[1].content : [];
+        _waypoints.forEach(function (w) { _waypointCache[w.id] = w; });
+
+        renderRoute(_route);
+        document.getElementById('loading').classList.add('d-none');
+        document.getElementById('content').classList.remove('d-none');
+
+        var stopManifest = document.getElementById('stop-manifest');
+        stopManifest.setRoute(_route);
+        stopManifest.setWaypoints(_waypoints);
+        initMap();
+        renderMapWaypoints(_waypoints);
+      }).catch(function (e) {
+        document.getElementById('loading').innerHTML =
+          '<div class="alert alert-danger">' +
+          '<i class="bi bi-exclamation-triangle me-2"></i>' +
+          escHtml('Failed to load delivery route: ' + e.message) +
+          ' <a href="/routes.html">Go to Delivery Routes</a></div>';
+      });
+    }
+
+    // -------------------------------------------------------------------------
+    // Waypoint CRUD
+    // -------------------------------------------------------------------------
+    function loadWaypoints() {
+      if (!_route) return;
+      apiFetch('GET', API + '/routes/' + _route.id + '/waypoints?size=100&sort=sequence,asc')
+        .then(function (data) {
+          _waypoints = data && data.content ? data.content : [];
+          _waypoints.forEach(function (w) { _waypointCache[w.id] = w; });
+          document.getElementById('stop-manifest').setWaypoints(_waypoints);
+          renderMapWaypoints(_waypoints, { preserveView: true });
+        })
+        .catch(function (e) {
+          showAlert('danger', '<i class="bi bi-exclamation-triangle me-2"></i>' + escHtml('Failed to reload stops: ' + e.message));
+        });
+    }
+
+    function openAddWaypointModal() {
+      var form = document.getElementById('add-waypoint-form');
+      form.reset(); form.classList.remove('was-validated');
+      document.getElementById('wp-route-id').value = _route.id;
+      document.getElementById('wp-id').value = '';
+      document.getElementById('wp-modal-icon').className = 'bi bi-geo-alt me-2';
+      document.getElementById('wp-modal-title-text').textContent = 'Add Stop';
+      document.getElementById('wp-submit-text').textContent = 'Add Stop';
+      bootstrap.Modal.getOrCreateInstance(document.getElementById('addWaypointModal')).show();
+    }
+
+    document.getElementById('add-waypoint-form').addEventListener('submit', function (e) {
+      e.preventDefault();
+      var form = e.target;
+      if (!form.checkValidity()) { form.classList.add('was-validated'); return; }
+
+      var routeId  = document.getElementById('wp-route-id').value;
+      var waypointId = document.getElementById('wp-id').value;
+      var body = {
+        name:      document.getElementById('wp-name').value.trim(),
+        sequence:  parseInt(document.getElementById('wp-sequence').value, 10),
+        latitude:  parseFloat(document.getElementById('wp-latitude').value),
+        longitude: parseFloat(document.getElementById('wp-longitude').value),
+        altitude:  parseFloat(document.getElementById('wp-altitude').value)
+      };
+      var speed   = document.getElementById('wp-speed').value;
+      var heading = document.getElementById('wp-heading').value;
+      var hold    = document.getElementById('wp-hold-time').value;
+      if (speed   !== '') body.speed    = parseFloat(speed);
+      if (heading !== '') body.heading  = parseFloat(heading);
+      if (hold    !== '') body.holdTime = parseInt(hold, 10);
+
+      var method = waypointId ? 'PUT' : 'POST';
+      var url    = waypointId
+        ? API + '/routes/' + routeId + '/waypoints/' + waypointId
+        : API + '/routes/' + routeId + '/waypoints';
+      apiFetch(method, url, body)
+        .then(function () {
+          bootstrap.Modal.getInstance(document.getElementById('addWaypointModal')).hide();
+          showAlert('success', '<i class="bi bi-check-circle me-2"></i>' + (waypointId ? 'Stop updated.' : 'Stop added.'));
+          loadWaypoints();
+        })
+        .catch(function (err) {
+          showAlert('danger', '<i class="bi bi-exclamation-triangle me-2"></i>' + escHtml('Failed to ' + (waypointId ? 'update' : 'add') + ' stop: ' + err.message));
+        });
+    });
+
+    document.getElementById('addWaypointModal').addEventListener('hidden.bs.modal', function () {
+      var f = document.getElementById('add-waypoint-form');
+      f.reset(); f.classList.remove('was-validated');
+      document.getElementById('wp-id').value = '';
+      document.getElementById('wp-modal-icon').className = 'bi bi-geo-alt me-2';
+      document.getElementById('wp-modal-title-text').textContent = 'Add Stop';
+      document.getElementById('wp-submit-text').textContent = 'Add Stop';
+    });
+
+    function deleteWaypoint(routeId, waypointId, name) {
+      if (!confirm('Remove stop "' + name + '"?')) return;
+      apiFetch('DELETE', API + '/routes/' + routeId + '/waypoints/' + waypointId)
+        .then(function () {
+          showAlert('success', '<i class="bi bi-check-circle me-2"></i>Stop removed.');
+          loadWaypoints();
+        })
+        .catch(function (err) {
+          showAlert('danger', '<i class="bi bi-exclamation-triangle me-2"></i>' + escHtml('Failed to remove stop: ' + err.message));
+        });
+    }
+
+    function openEditWaypointModal(routeId, waypointId) {
+      var w = _waypointCache[waypointId];
+      if (!w) { showAlert('danger', '<i class="bi bi-exclamation-triangle me-2"></i>Stop data not found. Try refreshing.'); return; }
+      var form = document.getElementById('add-waypoint-form');
+      form.reset(); form.classList.remove('was-validated');
+      document.getElementById('wp-route-id').value = routeId;
+      document.getElementById('wp-id').value         = waypointId;
+      document.getElementById('wp-name').value       = w.name || '';
+      document.getElementById('wp-sequence').value   = w.sequence  != null ? w.sequence  : '';
+      document.getElementById('wp-latitude').value   = w.latitude  != null ? w.latitude  : '';
+      document.getElementById('wp-longitude').value  = w.longitude != null ? w.longitude : '';
+      document.getElementById('wp-altitude').value   = w.altitude  != null ? w.altitude  : '';
+      document.getElementById('wp-speed').value      = w.speed     != null ? w.speed     : '';
+      document.getElementById('wp-heading').value    = w.heading   != null ? w.heading   : '';
+      document.getElementById('wp-hold-time').value  = w.holdTime  != null ? w.holdTime  : '';
+      document.getElementById('wp-modal-icon').className         = 'bi bi-pencil me-2';
+      document.getElementById('wp-modal-title-text').textContent = 'Edit Stop';
+      document.getElementById('wp-submit-text').textContent      = 'Save Changes';
+      bootstrap.Modal.getOrCreateInstance(document.getElementById('addWaypointModal')).show();
+    }
+
+    // -------------------------------------------------------------------------
+    // Random data
+    // -------------------------------------------------------------------------
+    var SM_SERVICE_AREAS = [
+      { lat: [51.45, 51.60], lon: [-0.30, 0.10] },
+      { lat: [52.40, 52.60], lon: [-1.95, -1.70] },
+      { lat: [53.35, 53.55], lon: [-2.35, -2.05] },
+      { lat: [55.82, 56.00], lon: [-4.40, -3.95] },
+      { lat: [51.42, 51.56], lon: [-3.30, -3.05] }
+    ];
+    var SM_STOP_NAMES = ['Depot pickup', 'Locker collection', 'Retail pickup', 'Hub transfer', 'Customer delivery', 'Priority drop', 'Returns collection', 'Parcel locker drop', 'Pharmacy delivery'];
+
+    function fillRandomWaypoint() {
+      var seq  = document.getElementById('stop-manifest').getWaypoints().length + 1;
+      var t    = SM_SERVICE_AREAS[Math.floor(Math.random() * SM_SERVICE_AREAS.length)];
+      var name = SM_STOP_NAMES[Math.floor(Math.random() * SM_STOP_NAMES.length)];
+      document.getElementById('wp-name').value      = name + ' ' + seq;
+      document.getElementById('wp-sequence').value  = seq;
+      document.getElementById('wp-latitude').value  = parseFloat((t.lat[0] + Math.random() * (t.lat[1] - t.lat[0])).toFixed(4));
+      document.getElementById('wp-longitude').value = parseFloat((t.lon[0] + Math.random() * (t.lon[1] - t.lon[0])).toFixed(4));
+      document.getElementById('wp-altitude').value  = (Math.floor(Math.random() * 11) + 2) * 100;
+      document.getElementById('wp-speed').value     = (Math.floor(Math.random() * 17) + 8) * 5;
+      document.getElementById('wp-heading').value   = Math.floor(Math.random() * 360);
+      var holdOpts = [0, 60, 90, 120, 180];
+      var hold = holdOpts[Math.floor(Math.random() * holdOpts.length)];
+      document.getElementById('wp-hold-time').value = hold > 0 ? hold : '';
+    }
+
+    // -------------------------------------------------------------------------
+    // Edit route modal
+    // -------------------------------------------------------------------------
+    document.getElementById('editRouteModal').addEventListener('show.bs.modal', function () {
+      if (!_route) return;
+      document.getElementById('em-name').value        = _route.name        || '';
+      document.getElementById('em-description').value = _route.description || '';
+      document.getElementById('em-aircraft-id').value = _route.aircraftId  || '';
+      document.getElementById('em-status').value      = _route.status      || 'PLANNED';
+      document.getElementById('edit-route-form').classList.remove('was-validated');
+    });
+
+    document.getElementById('edit-route-form').addEventListener('submit', function (e) {
+      e.preventDefault();
+      var form = e.target;
+      if (!form.checkValidity()) { form.classList.add('was-validated'); return; }
+
+      var body = {
+        name:       document.getElementById('em-name').value.trim(),
+        aircraftId: document.getElementById('em-aircraft-id').value.trim(),
+        status:     document.getElementById('em-status').value
+      };
+      var desc = document.getElementById('em-description').value.trim();
+      if (desc) body.description = desc;
+
+      apiFetch('PUT', API + '/routes/' + _route.id, body)
+        .then(function (updated) {
+          _route = updated;
+          renderRoute(_route);
+          bootstrap.Modal.getInstance(document.getElementById('editRouteModal')).hide();
+          showAlert('success', '<i class="bi bi-check-circle me-2"></i>Delivery route updated.');
+        })
+        .catch(function (e) {
+          showAlert('danger', '<i class="bi bi-exclamation-triangle me-2"></i>' + escHtml(e.message));
+        });
+    });
+
+    // -------------------------------------------------------------------------
+    // Boot
+    // -------------------------------------------------------------------------
+    var stopManifest = document.getElementById('stop-manifest');
+    stopManifest.configure({
+      apiFetch: function (method, path, body) { return apiFetch(method, API + path, body); }
+    });
+    stopManifest.addEventListener('waypoints-changed', function (e) {
+      _waypoints = e.detail.waypoints;
+      _waypoints.forEach(function (w) { _waypointCache[w.id] = w; });
+      renderMapWaypoints(_waypoints, { preserveView: true });
+      showAlert('success', '<i class="bi bi-check-circle me-2"></i>Stop order saved.');
+    });
+    stopManifest.addEventListener('save-error', function (e) {
+      showAlert('danger', '<i class="bi bi-exclamation-triangle me-2"></i>' + escHtml(e.detail.message));
+    });
+    stopManifest.addEventListener('add-stop', function () {
+      openAddWaypointModal();
+    });
+    stopManifest.addEventListener('edit-stop', function (e) {
+      openEditWaypointModal(e.detail.routeId, e.detail.waypointId);
+    });
+    stopManifest.addEventListener('delete-stop', function (e) {
+      deleteWaypoint(e.detail.routeId, e.detail.waypointId, e.detail.name);
+    });
+
+    load();
+  </script>
+</body>
+</html>

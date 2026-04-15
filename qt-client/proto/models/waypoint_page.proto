@@ -1,0 +1,11 @@
+syntax = "proto3";
+
+package openapitools;
+
+import public "models/page_metadata.proto";
+import public "models/waypoint.proto";
+
+message WaypointPage {
+  repeated Waypoint content = 414659706;
+  PageMetadata      page    = 3433103;
+}

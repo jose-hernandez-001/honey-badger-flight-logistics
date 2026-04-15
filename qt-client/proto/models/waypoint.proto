@@ -1,0 +1,18 @@
+syntax = "proto3";
+
+package openapitools;
+
+message Waypoint {
+  string id        = 3355;
+  string route_id  = 5418705;
+  string name      = 3373707;
+  int32  sequence  = 275806147;
+  double latitude  = 366236566;
+  double longitude = 137365935;
+  double altitude  = 425937573;
+  double speed     = 109641799;
+  double heading   = 258440707;
+  int32  hold_time = 128333391;
+  string created_at = 295938284;
+  string updated_at = 295464393;
+}

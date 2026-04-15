@@ -1,0 +1,116 @@
+{
+  "routes": [
+    {
+      "id": "d41e01fd-08f5-4d87-a83b-e4ad8ba3ac50",
+      "name": "Midlands depot pickup route",
+      "description": "Pick up parcels from the Midlands depot and distribute them to scheduled customer stops before the afternoon cutoff.",
+      "aircraftId": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+      "status": "PLANNED",
+      "waypoints": [
+        {
+          "id": "b0540c14-6f0b-4a0d-a7ad-0aa5926fcb90",
+          "name": "Depot pickup",
+          "sequence": 1,
+          "latitude": 51.5074,
+          "longitude": -0.1278,
+          "altitude": 3000.0,
+          "speed": 250.0,
+          "heading": 45.0,
+          "holdTime": 30
+        },
+        {
+          "id": "3c3897b8-6352-4bf2-991e-7ecf25a5d667",
+          "name": "Final delivery",
+          "sequence": 2,
+          "latitude": 40.48038142908172,
+          "longitude": -3.6035156250000004,
+          "altitude": 2000.0,
+          "speed": null,
+          "heading": null,
+          "holdTime": 0
+        }
+      ]
+    },
+    {
+      "id": "a69f9055-ae47-450b-bd52-133ffed2f3f2",
+      "name": "Priority returns sweep",
+      "description": "Collect customer returns from lockers and retail counters, then hand them back to the cross-dock for same-day processing.",
+      "aircraftId": "249fe26c-4450-432e-b4d0-07f40c7c63eb",
+      "status": "ACTIVE",
+      "waypoints": [
+        {
+          "id": "7416d2c3-e311-4acb-9c98-a3e4c884bd77",
+          "name": "Depot pickup",
+          "sequence": 1,
+          "latitude": 51.36492148825955,
+          "longitude": -2.6477050781250004,
+          "altitude": 4000.0,
+          "speed": 165.0,
+          "heading": 90.0,
+          "holdTime": 0
+        }
+      ]
+    },
+    {
+      "id": "98eb8bde-f300-4729-80e7-e86063ff237f",
+      "name": "North corridor same-day run",
+      "description": "Collect outbound parcels from the regional hub and complete timed deliveries across the northern corridor.",
+      "aircraftId": "0996d086-f08f-414f-8178-cf206e348c30",
+      "status": "PLANNED",
+      "waypoints": [
+        {
+          "id": "70b52f3a-6bb8-4f38-8bfd-389777a65b82",
+          "name": "Depot pickup",
+          "sequence": 1,
+          "latitude": 39.3247,
+          "longitude": -0.5956,
+          "altitude": 9100.0,
+          "speed": 190.0,
+          "heading": 144.0,
+          "holdTime": 90
+        },
+        {
+          "id": "a1636404-f51a-437b-b5c8-60f72c981b90",
+          "name": "Locker collection",
+          "sequence": 2,
+          "latitude": 29.38217507514529,
+          "longitude": 21.26953125,
+          "altitude": 4700.0,
+          "speed": 150.0,
+          "heading": 112.0,
+          "holdTime": 90
+        },
+        {
+          "id": "aba41413-8b95-45d3-9b7a-c384af080114",
+          "name": "Customer delivery 2",
+          "sequence": 3,
+          "latitude": 22.2845,
+          "longitude": 54.8013,
+          "altitude": 3100.0,
+          "speed": 190.0,
+          "heading": 341.0,
+          "holdTime": 30
+        },
+        {
+          "id": "7f55d5da-8a4c-419a-bfba-10a1bdf0bd8b",
+          "name": "Final delivery",
+          "sequence": 4,
+          "latitude": 61.1266,
+          "longitude": 27.1113,
+          "altitude": 4200.0,
+          "speed": 410.0,
+          "heading": 274.0,
+          "holdTime": 90
+        }
+      ]
+    },
+    {
+      "id": "98db45f7-27de-4fde-90c3-b9fcf94f69b5",
+      "name": "Empty route",
+      "description": "Balance parcel overflow between the Birmingham sorting hub and the local delivery depot serving central London.",
+      "aircraftId": "bd509b29-80de-4a59-9155-70f808f28bf0",
+      "status": "PLANNED",
+      "waypoints": []
+    }
+  ]
+}

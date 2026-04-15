@@ -1,0 +1,57 @@
+services:
+  neo4j:
+    image: 'neo4j:latest'
+    environment:
+      - 'NEO4J_AUTH=neo4j/notverysecret'
+      - 'NEO4J_dbms_usage__report_enabled=false'
+    ports:
+      # Expose Neo4j HTTP and Bolt ports
+      - '7474:7474'
+      - '7687:7687'
+
+  geoserver:
+    image: 'docker.osgeo.org/geoserver:2.25.2'
+    environment:
+      - 'GEOSERVER_ADMIN_USER=admin'
+      - 'GEOSERVER_ADMIN_PASSWORD=geoserver'
+      - 'SKIP_DEMO_DATA=true'
+      # Increase heap from the default 1g: GeoServer was hitting 875 Full GCs in
+      # 34 hours with -Xmx1g.  2g gives G1GC enough room for concurrent marking.
+      # SoftRefLRUPolicyMSPerMB keeps raster-cache soft references alive longer so
+      # tiles are served from cache rather than re-rendered on every GC cycle.
+      # NOTE: the GeoServer image ships -D-XX:SoftRefLRUPolicyMSPerMB (malformed,
+      # treated as a system property); the correct JVM flag is set here instead.
+      - 'EXTRA_JAVA_OPTS=-Xmx2g -XX:SoftRefLRUPolicyMSPerMB=36000'
+    security_opt:
+      - 'label=disable'
+    ports:
+      - '8600:8080'
+    volumes:
+      - geoserver-data:/opt/geoserver_data
+    healthcheck:
+      test: [ "CMD-SHELL", "curl -sf http://localhost:8080/geoserver/web/wicket/resource/org.geoserver.web.GeoServerBasePage/img/logo.png -o /dev/null || exit 1" ]
+      interval: 15s
+      timeout: 10s
+      retries: 10
+      start_period: 30s
+
+  geoserver-init:
+    image: 'docker.osgeo.org/geoserver:2.25.2'
+    profiles: [ "init" ]
+    security_opt:
+      - 'label=disable'
+    entrypoint: [ "sh", "/init.sh" ]
+    depends_on:
+      geoserver:
+        condition: service_healthy
+    volumes:
+      - ./geoserver/init.sh:/init.sh:ro
+      - ./geoserver/data:/seed-data
+    environment:
+      - 'GEOSERVER_URL=http://geoserver:8080/geoserver'
+      - 'ADMIN_USER=admin'
+      - 'ADMIN_PASS=geoserver'
+      - 'DATA_DIR=/seed-data'
+
+volumes:
+  geoserver-data:

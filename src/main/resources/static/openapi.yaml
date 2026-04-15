@@ -1,0 +1,848 @@
+openapi: 3.0.3
+info:
+  title: Honey Badger Flight Logistics API
+  description: REST API for managing flight logistics delivery routes and stops.
+  version: 1.0.0
+  contact:
+    name: Honey Badger Flight Systems
+  license:
+    name: Apache 2.0
+    url: https://www.apache.org/licenses/LICENSE-2.0
+
+servers:
+  - url: http://localhost:8080
+    description: Local development server
+
+tags:
+  - name: Routes
+    description: Operations for managing delivery routes
+  - name: Waypoints
+    description: Operations for managing stops within a delivery route
+
+paths:
+
+  # ---------------------------------------------------------------------------
+  # Routes
+  # ---------------------------------------------------------------------------
+
+  /api/v1/routes:
+    get:
+      tags: [Routes]
+      summary: List all routes
+      operationId: listRoutes
+      parameters:
+        - name: status
+          in: query
+          description: Filter routes by status
+          required: false
+          schema:
+            $ref: '#/components/schemas/RouteStatus'
+        - $ref: '#/components/parameters/PageParam'
+        - $ref: '#/components/parameters/SizeParam'
+        - $ref: '#/components/parameters/SortParam'
+      responses:
+        '200':
+          description: A paginated list of routes
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RoutePage'
+            application/x-jackson-smile:
+              schema:
+                $ref: '#/components/schemas/RoutePage'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+    post:
+      tags: [Routes]
+      summary: Create a new route
+      operationId: createRoute
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RouteRequest'
+          application/x-jackson-smile:
+            schema:
+              $ref: '#/components/schemas/RouteRequest'
+      responses:
+        '201':
+          description: Route created successfully
+          headers:
+            Location:
+              description: URL of the newly created route
+              schema:
+                type: string
+                format: uri
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Route'
+            application/x-jackson-smile:
+              schema:
+                $ref: '#/components/schemas/Route'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '422':
+          $ref: '#/components/responses/UnprocessableEntity'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /api/v1/routes/{routeId}:
+    parameters:
+      - $ref: '#/components/parameters/RouteId'
+
+    get:
+      tags: [Routes]
+      summary: Get a route by ID
+      operationId: getRoute
+      responses:
+        '200':
+          description: Route found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Route'
+            application/x-jackson-smile:
+              schema:
+                $ref: '#/components/schemas/Route'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+    put:
+      tags: [Routes]
+      summary: Update an existing route
+      operationId: updateRoute
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RouteRequest'
+          application/x-jackson-smile:
+            schema:
+              $ref: '#/components/schemas/RouteRequest'
+      responses:
+        '200':
+          description: Route updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Route'
+            application/x-jackson-smile:
+              schema:
+                $ref: '#/components/schemas/Route'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '422':
+          $ref: '#/components/responses/UnprocessableEntity'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+    patch:
+      tags: [Routes]
+      summary: Partially update a route
+      operationId: patchRoute
+      requestBody:
+        required: true
+        content:
+          application/merge-patch+json:
+            schema:
+              $ref: '#/components/schemas/RoutePatch'
+          application/x-jackson-smile:
+            schema:
+              $ref: '#/components/schemas/RoutePatch'
+      responses:
+        '200':
+          description: Route patched successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Route'
+            application/x-jackson-smile:
+              schema:
+                $ref: '#/components/schemas/Route'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '422':
+          $ref: '#/components/responses/UnprocessableEntity'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+    delete:
+      tags: [Routes]
+      summary: Delete a route
+      operationId: deleteRoute
+      responses:
+        '204':
+          description: Route deleted successfully
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  # ---------------------------------------------------------------------------
+  # Waypoints (scoped to a route)
+  # ---------------------------------------------------------------------------
+
+  /api/v1/routes/{routeId}/waypoints:
+    parameters:
+      - $ref: '#/components/parameters/RouteId'
+
+    get:
+      tags: [Waypoints]
+      summary: List all waypoints for a route
+      operationId: listWaypoints
+      parameters:
+        - $ref: '#/components/parameters/PageParam'
+        - $ref: '#/components/parameters/SizeParam'
+        - $ref: '#/components/parameters/SortParam'
+      responses:
+        '200':
+          description: A paginated list of waypoints
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WaypointPage'
+            application/x-jackson-smile:
+              schema:
+                $ref: '#/components/schemas/WaypointPage'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+    post:
+      tags: [Waypoints]
+      summary: Add a waypoint to a route
+      operationId: createWaypoint
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/WaypointRequest'
+          application/x-jackson-smile:
+            schema:
+              $ref: '#/components/schemas/WaypointRequest'
+      responses:
+        '201':
+          description: Waypoint created successfully
+          headers:
+            Location:
+              description: URL of the newly created waypoint
+              schema:
+                type: string
+                format: uri
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Waypoint'
+            application/x-jackson-smile:
+              schema:
+                $ref: '#/components/schemas/Waypoint'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '422':
+          $ref: '#/components/responses/UnprocessableEntity'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /api/v1/routes/{routeId}/waypoints/{waypointId}:
+    parameters:
+      - $ref: '#/components/parameters/RouteId'
+      - $ref: '#/components/parameters/WaypointId'
+
+    get:
+      tags: [Waypoints]
+      summary: Get a waypoint by ID
+      operationId: getWaypoint
+      responses:
+        '200':
+          description: Waypoint found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Waypoint'
+            application/x-jackson-smile:
+              schema:
+                $ref: '#/components/schemas/Waypoint'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+    put:
+      tags: [Waypoints]
+      summary: Replace a waypoint
+      operationId: updateWaypoint
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/WaypointRequest'
+          application/x-jackson-smile:
+            schema:
+              $ref: '#/components/schemas/WaypointRequest'
+      responses:
+        '200':
+          description: Waypoint updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Waypoint'
+            application/x-jackson-smile:
+              schema:
+                $ref: '#/components/schemas/Waypoint'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '422':
+          $ref: '#/components/responses/UnprocessableEntity'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+    patch:
+      tags: [Waypoints]
+      summary: Partially update a waypoint
+      operationId: patchWaypoint
+      requestBody:
+        required: true
+        content:
+          application/merge-patch+json:
+            schema:
+              $ref: '#/components/schemas/WaypointPatch'
+          application/x-jackson-smile:
+            schema:
+              $ref: '#/components/schemas/WaypointPatch'
+      responses:
+        '200':
+          description: Waypoint patched successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Waypoint'
+            application/x-jackson-smile:
+              schema:
+                $ref: '#/components/schemas/Waypoint'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '422':
+          $ref: '#/components/responses/UnprocessableEntity'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+    delete:
+      tags: [Waypoints]
+      summary: Remove a waypoint from a route
+      operationId: deleteWaypoint
+      responses:
+        '204':
+          description: Waypoint deleted successfully
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /api/v1/routes/{routeId}/waypoints/reorder:
+    parameters:
+      - $ref: '#/components/parameters/RouteId'
+
+    put:
+      tags: [Waypoints]
+      summary: Reorder all waypoints in a route
+      operationId: reorderWaypoints
+      description: Replaces the sequence of all waypoints for the route in a single atomic operation.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/WaypointReorderRequest'
+          application/x-jackson-smile:
+            schema:
+              $ref: '#/components/schemas/WaypointReorderRequest'
+      responses:
+        '200':
+          description: Waypoints reordered successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WaypointList'
+            application/x-jackson-smile:
+              schema:
+                $ref: '#/components/schemas/WaypointList'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '422':
+          $ref: '#/components/responses/UnprocessableEntity'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+components:
+
+  # ---------------------------------------------------------------------------
+  # Parameters
+  # ---------------------------------------------------------------------------
+
+  parameters:
+    RouteId:
+      name: routeId
+      in: path
+      description: Unique identifier of the route
+      required: true
+      schema:
+        type: string
+        format: uuid
+      example: 3fa85f64-5717-4562-b3fc-2c963f66afa6
+
+    WaypointId:
+      name: waypointId
+      in: path
+      description: Unique identifier of the waypoint
+      required: true
+      schema:
+        type: string
+        format: uuid
+      example: 7cb8a2b1-1234-4abc-8def-9a0b1c2d3e4f
+
+    PageParam:
+      name: page
+      in: query
+      description: Zero-based page number
+      required: false
+      schema:
+        type: integer
+        minimum: 0
+        default: 0
+
+    SizeParam:
+      name: size
+      in: query
+      description: Number of items per page
+      required: false
+      schema:
+        type: integer
+        minimum: 1
+        maximum: 100
+        default: 20
+
+    SortParam:
+      name: sort
+      in: query
+      description: Sort field and direction (e.g. `name,asc`)
+      required: false
+      schema:
+        type: string
+        example: name,asc
+
+  # ---------------------------------------------------------------------------
+  # Schemas
+  # ---------------------------------------------------------------------------
+
+  schemas:
+
+    # -- Route schemas -------------------------------------------------------
+
+    RouteStatus:
+      type: string
+      enum: [PLANNED, ACTIVE, PAUSED, COMPLETED, ABORTED]
+      description: Lifecycle status of a route
+
+    RouteRequest:
+      type: object
+      required: [name, aircraftId]
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 100
+          example: Operation Night Hawk
+        description:
+          type: string
+          maxLength: 1000
+          example: Long-range reconnaissance route over sector 7
+        aircraftId:
+          type: string
+          format: uuid
+          example: a1b2c3d4-e5f6-7890-abcd-ef1234567890
+        status:
+          $ref: '#/components/schemas/RouteStatus'
+
+    RoutePatch:
+      type: object
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 100
+        description:
+          type: string
+          maxLength: 1000
+        aircraftId:
+          type: string
+          format: uuid
+        status:
+          $ref: '#/components/schemas/RouteStatus'
+
+    Route:
+      type: object
+      required: [id, name, aircraftId, status, createdAt, updatedAt]
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+          example: 3fa85f64-5717-4562-b3fc-2c963f66afa6
+        name:
+          type: string
+          example: Operation Night Hawk
+        description:
+          type: string
+          example: Long-range reconnaissance route over sector 7
+        aircraftId:
+          type: string
+          format: uuid
+          example: a1b2c3d4-e5f6-7890-abcd-ef1234567890
+        status:
+          $ref: '#/components/schemas/RouteStatus'
+        waypointCount:
+          type: integer
+          readOnly: true
+          description: Total number of waypoints in this route
+          example: 12
+        createdAt:
+          type: string
+          format: date-time
+          readOnly: true
+          example: '2026-03-31T10:00:00Z'
+        updatedAt:
+          type: string
+          format: date-time
+          readOnly: true
+          example: '2026-03-31T12:30:00Z'
+
+    RoutePage:
+      type: object
+      required: [content, page]
+      properties:
+        content:
+          type: array
+          items:
+            $ref: '#/components/schemas/Route'
+        page:
+          $ref: '#/components/schemas/PageMetadata'
+
+    # -- Waypoint schemas ------------------------------------------------------
+
+    WaypointRequest:
+      type: object
+      required: [name, sequence, latitude, longitude, altitude]
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 100
+          example: Alpha-1
+        sequence:
+          type: integer
+          minimum: 1
+          description: 1-based position of the waypoint in the route flight path
+          example: 3
+        latitude:
+          type: number
+          format: double
+          minimum: -90
+          maximum: 90
+          example: 51.5074
+        longitude:
+          type: number
+          format: double
+          minimum: -180
+          maximum: 180
+          example: -0.1278
+        altitude:
+          type: number
+          format: double
+          description: Altitude in metres above mean sea level (AMSL)
+          example: 3000.0
+        speed:
+          type: number
+          format: double
+          description: Target airspeed in knots
+          minimum: 0
+          example: 250.0
+        heading:
+          type: number
+          format: double
+          description: Magnetic heading in degrees (0–360)
+          minimum: 0
+          maximum: 360
+          example: 045.0
+        holdTime:
+          type: integer
+          description: Time to hold at this waypoint in seconds (0 means no hold)
+          minimum: 0
+          default: 0
+          example: 30
+
+    WaypointPatch:
+      type: object
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 100
+        sequence:
+          type: integer
+          minimum: 1
+        latitude:
+          type: number
+          format: double
+          minimum: -90
+          maximum: 90
+        longitude:
+          type: number
+          format: double
+          minimum: -180
+          maximum: 180
+        altitude:
+          type: number
+          format: double
+        speed:
+          type: number
+          format: double
+          minimum: 0
+        heading:
+          type: number
+          format: double
+          minimum: 0
+          maximum: 360
+        holdTime:
+          type: integer
+          minimum: 0
+
+    Waypoint:
+      type: object
+      required: [id, routeId, name, sequence, latitude, longitude, altitude, createdAt, updatedAt]
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+          example: 7cb8a2b1-1234-4abc-8def-9a0b1c2d3e4f
+        routeId:
+          type: string
+          format: uuid
+          readOnly: true
+          example: 3fa85f64-5717-4562-b3fc-2c963f66afa6
+        name:
+          type: string
+          example: Alpha-1
+        sequence:
+          type: integer
+          example: 3
+        latitude:
+          type: number
+          format: double
+          example: 51.5074
+        longitude:
+          type: number
+          format: double
+          example: -0.1278
+        altitude:
+          type: number
+          format: double
+          example: 3000.0
+        speed:
+          type: number
+          format: double
+          example: 250.0
+        heading:
+          type: number
+          format: double
+          example: 45.0
+        holdTime:
+          type: integer
+          example: 30
+        createdAt:
+          type: string
+          format: date-time
+          readOnly: true
+          example: '2026-03-31T10:05:00Z'
+        updatedAt:
+          type: string
+          format: date-time
+          readOnly: true
+          example: '2026-03-31T10:05:00Z'
+
+    WaypointList:
+      type: object
+      required: [waypoints]
+      description: Ordered list of waypoints
+      properties:
+        waypoints:
+          type: array
+          items:
+            $ref: '#/components/schemas/Waypoint'
+
+    WaypointPage:
+      type: object
+      required: [content, page]
+      properties:
+        content:
+          type: array
+          items:
+            $ref: '#/components/schemas/Waypoint'
+        page:
+          $ref: '#/components/schemas/PageMetadata'
+
+    WaypointReorderRequest:
+      type: object
+      required: [waypointIds]
+      description: Ordered list of waypoint IDs defining the new sequence
+      properties:
+        waypointIds:
+          type: array
+          minItems: 1
+          items:
+            type: string
+            format: uuid
+          example:
+            - 7cb8a2b1-1234-4abc-8def-9a0b1c2d3e4f
+            - 3fa85f64-5717-4562-b3fc-2c963f66afa6
+
+    # -- Shared schemas --------------------------------------------------------
+
+    PageMetadata:
+      type: object
+      required: [number, size, totalElements, totalPages]
+      properties:
+        number:
+          type: integer
+          description: Current zero-based page number
+          example: 0
+        size:
+          type: integer
+          description: Page size
+          example: 20
+        totalElements:
+          type: integer
+          format: int64
+          description: Total number of elements across all pages
+          example: 42
+        totalPages:
+          type: integer
+          description: Total number of pages
+          example: 3
+
+    ProblemDetail:
+      type: object
+      description: RFC 9457 Problem Details for HTTP APIs
+      properties:
+        type:
+          type: string
+          format: uri
+          example: https://example.com/problems/validation-error
+        title:
+          type: string
+          example: Validation Error
+        status:
+          type: integer
+          example: 400
+        detail:
+          type: string
+          example: Field 'name' must not be blank
+        instance:
+          type: string
+          format: uri
+          example: /api/v1/routes/3fa85f64-5717-4562-b3fc-2c963f66afa6
+
+  # ---------------------------------------------------------------------------
+  # Responses
+  # ---------------------------------------------------------------------------
+
+  responses:
+    BadRequest:
+      description: Invalid request payload or parameters
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ProblemDetail'
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/ProblemDetail'
+        application/x-jackson-smile:
+          schema:
+            $ref: '#/components/schemas/ProblemDetail'
+
+    NotFound:
+      description: Resource not found
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ProblemDetail'
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/ProblemDetail'
+        application/x-jackson-smile:
+          schema:
+            $ref: '#/components/schemas/ProblemDetail'
+
+    Conflict:
+      description: Request conflicts with current state of the resource
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ProblemDetail'
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/ProblemDetail'
+        application/x-jackson-smile:
+          schema:
+            $ref: '#/components/schemas/ProblemDetail'
+
+    UnprocessableEntity:
+      description: Semantic validation failure
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ProblemDetail'
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/ProblemDetail'
+        application/x-jackson-smile:
+          schema:
+            $ref: '#/components/schemas/ProblemDetail'
+
+    InternalServerError:
+      description: Unexpected server error
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ProblemDetail'
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/ProblemDetail'
+        application/x-jackson-smile:
+          schema:
+            $ref: '#/components/schemas/ProblemDetail'
