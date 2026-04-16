@@ -5,7 +5,7 @@ Prerequisites
 -------------
 
 * Java 21 (JDK)
-* Maven 3.9+
+* Maven 3.9.14+
 * Docker (for Neo4j and GeoServer via Docker Compose)
 * Python 3.10+ (optional — only required to build the Sphinx documentation)
 

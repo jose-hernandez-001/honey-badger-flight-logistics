@@ -24,7 +24,7 @@
 	<developers>
 		<developer>
 			<id>doraemoncito</id>
-			<name>Honey Badger Flight Logistics</name>
+			<name>José Hernández</name>
 			<organization>Honey Badger Flight Logistics</organization>
 			<organizationUrl>https://github.com/doraemoncito</organizationUrl>
 		</developer>
@@ -324,14 +324,14 @@
 						<sourceDirectory>${proto.generated.dir}</sourceDirectory>
 					</sourceDirectories>
 					<protoc>${protobuf-java.version}</protoc>
-					<binaryMavenPlugins>
-						<binaryMavenPlugin>
-							<groupId>io.grpc</groupId>
-							<artifactId>protoc-gen-grpc-java</artifactId>
-							<version>${grpc.version}</version>
-							<options>@generated=omit</options>
-						</binaryMavenPlugin>
-					</binaryMavenPlugins>
+				<plugins>
+					<plugin kind="binary-maven">
+						<groupId>io.grpc</groupId>
+						<artifactId>protoc-gen-grpc-java</artifactId>
+						<version>${grpc.version}</version>
+						<options>@generated=omit</options>
+					</plugin>
+				</plugins>
 				</configuration>
 				<executions>
 					<execution>
@@ -385,11 +385,17 @@
 							<apiPackage>com.honeybadger.flightlogistics.api</apiPackage>
 							<modelPackage>com.honeybadger.flightlogistics.model</modelPackage>
 							<ignoreFileOverride>${project.resources.directory}/.openapi-generator-ignore</ignoreFileOverride>
+							<importMappings>
+								<!-- Spring Framework 7 (Spring Boot 4) deprecated @org.springframework.lang.Nullable
+								     in favour of @org.jspecify.annotations.Nullable (JSpecify).  Override the
+								     generator's default import so that generated model classes use the current API. -->
+								<importMapping>Nullable=org.jspecify.annotations.Nullable</importMapping>
+							</importMappings>
 							<configOptions>
 								<delegatePattern>true</delegatePattern>
 								<documentationProvider>springdoc</documentationProvider>
 								<annotationLibrary>swagger2</annotationLibrary>
-								<useSpringBoot3>true</useSpringBoot3>
+								<useSpringBoot4>true</useSpringBoot4>
 								<useJakartaEe>true</useJakartaEe>
 								<openApiNullable>true</openApiNullable>
 								<useTags>true</useTags>

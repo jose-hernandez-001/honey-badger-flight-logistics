@@ -46,7 +46,7 @@ Technology Stack
    * - Frontend
      - Bootstrap 5.3, Bootstrap Icons, Leaflet 1.9
    * - Build
-     - Maven 3.9+
+     - Maven 3.9.14+
 
 Licence
 -------
