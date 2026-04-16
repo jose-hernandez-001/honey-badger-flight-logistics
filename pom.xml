@@ -218,6 +218,32 @@
 				<artifactId>maven-resources-plugin</artifactId>
 				<executions>
 					<execution>
+						<!-- Sync the OpenAPI-generated proto schemas to qt-client/proto so the Qt
+						     gRPC client always stays in step with the REST API definition. Runs in
+						     the generate-sources phase, which follows the initialize phase where
+						     openapi-generator (generate-proto execution) produces the files. -->
+						<id>sync-qt-client-proto</id>
+						<phase>generate-sources</phase>
+						<goals>
+							<goal>copy-resources</goal>
+						</goals>
+						<configuration>
+							<outputDirectory>${project.basedir}/qt-client/proto</outputDirectory>
+							<overwrite>true</overwrite>
+							<resources>
+								<resource>
+									<directory>${proto.generated.dir}</directory>
+									<filtering>false</filtering>
+									<excludes>
+										<exclude>.openapi-generator/**</exclude>
+										<exclude>.openapi-generator-ignore</exclude>
+										<exclude>README.md</exclude>
+									</excludes>
+								</resource>
+							</resources>
+						</configuration>
+					</execution>
+					<execution>
 						<id>copy-vendor-cache</id>
 						<phase>process-resources</phase>
 						<goals>
