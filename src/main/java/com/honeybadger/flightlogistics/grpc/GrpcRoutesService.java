@@ -50,11 +50,11 @@ public class GrpcRoutesService extends RoutesServiceGrpc.RoutesServiceImplBase {
 
     @Override
     public void createRoute(
-            RoutesServiceOuterClass.CreateRouteRequest request,
-            StreamObserver<RoutesServiceOuterClass.CreateRouteResponse> responseObserver) {
+            openapitools.services.routesservice.RoutesServiceOuterClass.CreateRouteRequest request,
+            StreamObserver<openapitools.services.routesservice.RoutesServiceOuterClass.CreateRouteResponse> responseObserver) {
         var httpResponse = delegate.createRoute(
                 ProtoMapper.toRouteRequest(request.getRouteRequest()));
-        var builder = RoutesServiceOuterClass.CreateRouteResponse.newBuilder();
+        var builder = openapitools.services.routesservice.RoutesServiceOuterClass.CreateRouteResponse.newBuilder();
         if (httpResponse.getStatusCode().is2xxSuccessful() && httpResponse.getBody() != null) {
             builder.setRoute201(ProtoMapper.toProtoRoute(httpResponse.getBody()));
         }
@@ -64,10 +64,10 @@ public class GrpcRoutesService extends RoutesServiceGrpc.RoutesServiceImplBase {
 
     @Override
     public void deleteRoute(
-            RoutesServiceOuterClass.DeleteRouteRequest request,
-            StreamObserver<RoutesServiceOuterClass.DeleteRouteResponse> responseObserver) {
+            openapitools.services.routesservice.RoutesServiceOuterClass.DeleteRouteRequest request,
+            StreamObserver<openapitools.services.routesservice.RoutesServiceOuterClass.DeleteRouteResponse> responseObserver) {
         var httpResponse = delegate.deleteRoute(UUID.fromString(request.getRouteId()));
-        var builder = RoutesServiceOuterClass.DeleteRouteResponse.newBuilder();
+        var builder = openapitools.services.routesservice.RoutesServiceOuterClass.DeleteRouteResponse.newBuilder();
         if (httpResponse.getStatusCode().is2xxSuccessful()) {
             builder.setEmpty204(Empty.getDefaultInstance());
         }
@@ -77,10 +77,10 @@ public class GrpcRoutesService extends RoutesServiceGrpc.RoutesServiceImplBase {
 
     @Override
     public void getRoute(
-            RoutesServiceOuterClass.GetRouteRequest request,
-            StreamObserver<RoutesServiceOuterClass.GetRouteResponse> responseObserver) {
+            openapitools.services.routesservice.RoutesServiceOuterClass.GetRouteRequest request,
+            StreamObserver<openapitools.services.routesservice.RoutesServiceOuterClass.GetRouteResponse> responseObserver) {
         var httpResponse = delegate.getRoute(UUID.fromString(request.getRouteId()));
-        var builder = RoutesServiceOuterClass.GetRouteResponse.newBuilder();
+        var builder = openapitools.services.routesservice.RoutesServiceOuterClass.GetRouteResponse.newBuilder();
         if (httpResponse.getStatusCode().is2xxSuccessful() && httpResponse.getBody() != null) {
             builder.setRoute200(ProtoMapper.toProtoRoute(httpResponse.getBody()));
         }
@@ -90,8 +90,8 @@ public class GrpcRoutesService extends RoutesServiceGrpc.RoutesServiceImplBase {
 
     @Override
     public void listRoutes(
-            RoutesServiceOuterClass.ListRoutesRequest request,
-            StreamObserver<RoutesServiceOuterClass.ListRoutesResponse> responseObserver) {
+            openapitools.services.routesservice.RoutesServiceOuterClass.ListRoutesRequest request,
+            StreamObserver<openapitools.services.routesservice.RoutesServiceOuterClass.ListRoutesResponse> responseObserver) {
         // Proto default (0 = PLANNED) is treated as "no filter"; callers use non-zero for a filter.
         var status = request.getStatusValue() != 0
                 ? ProtoMapper.toRouteStatus(request.getStatus())
@@ -99,7 +99,7 @@ public class GrpcRoutesService extends RoutesServiceGrpc.RoutesServiceImplBase {
         var sort = request.getSort().isEmpty() ? null : request.getSort();
 
         var httpResponse = delegate.listRoutes(status, request.getPage(), request.getSize(), sort);
-        var builder = RoutesServiceOuterClass.ListRoutesResponse.newBuilder();
+        var builder = openapitools.services.routesservice.RoutesServiceOuterClass.ListRoutesResponse.newBuilder();
         if (httpResponse.getStatusCode().is2xxSuccessful() && httpResponse.getBody() != null) {
             builder.setRoutePage200(toProtoRoutePage(httpResponse.getBody()));
         }
@@ -109,12 +109,12 @@ public class GrpcRoutesService extends RoutesServiceGrpc.RoutesServiceImplBase {
 
     @Override
     public void patchRoute(
-            RoutesServiceOuterClass.PatchRouteRequest request,
-            StreamObserver<RoutesServiceOuterClass.PatchRouteResponse> responseObserver) {
+            openapitools.services.routesservice.RoutesServiceOuterClass.PatchRouteRequest request,
+            StreamObserver<openapitools.services.routesservice.RoutesServiceOuterClass.PatchRouteResponse> responseObserver) {
         var httpResponse = delegate.patchRoute(
                 UUID.fromString(request.getRouteId()),
                 ProtoMapper.toRoutePatch(request.getRoutePatch()));
-        var builder = RoutesServiceOuterClass.PatchRouteResponse.newBuilder();
+        var builder = openapitools.services.routesservice.RoutesServiceOuterClass.PatchRouteResponse.newBuilder();
         if (httpResponse.getStatusCode().is2xxSuccessful() && httpResponse.getBody() != null) {
             builder.setRoute200(ProtoMapper.toProtoRoute(httpResponse.getBody()));
         }
@@ -124,12 +124,12 @@ public class GrpcRoutesService extends RoutesServiceGrpc.RoutesServiceImplBase {
 
     @Override
     public void updateRoute(
-            RoutesServiceOuterClass.UpdateRouteRequest request,
-            StreamObserver<RoutesServiceOuterClass.UpdateRouteResponse> responseObserver) {
+            openapitools.services.routesservice.RoutesServiceOuterClass.UpdateRouteRequest request,
+            StreamObserver<openapitools.services.routesservice.RoutesServiceOuterClass.UpdateRouteResponse> responseObserver) {
         var httpResponse = delegate.updateRoute(
                 UUID.fromString(request.getRouteId()),
                 ProtoMapper.toRouteRequest(request.getRouteRequest()));
-        var builder = RoutesServiceOuterClass.UpdateRouteResponse.newBuilder();
+        var builder = openapitools.services.routesservice.RoutesServiceOuterClass.UpdateRouteResponse.newBuilder();
         if (httpResponse.getStatusCode().is2xxSuccessful() && httpResponse.getBody() != null) {
             builder.setRoute200(ProtoMapper.toProtoRoute(httpResponse.getBody()));
         }

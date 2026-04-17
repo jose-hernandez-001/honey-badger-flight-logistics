@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<FindBugsFilter>
+    <!-- Ignore auto-generated OpenAPI models -->
+    <Match>
+        <Package name="~com\.honeybadger\.flightlogistics\.model.*" />
+    </Match>
+    <!-- Ignore auto-generated gRPC classes -->
+    <Match>
+        <Package name="~openapitools\.services.*" />
+    </Match>
+    <!-- Ignore auto-generated utilities -->
+    <Match>
+        <Package name="~org\.openapitools.*" />
+    </Match>
+    <!-- Ignore EI_EXPOSE_REP, EI_EXPOSE_REP2, MS_EXPOSE_REP, CT_CONSTRUCTOR_THROW and SE_BAD_FIELD globally as they are too noisy for standard Spring/DTO patterns and generated protobufs -->
+    <Match>
+        <Bug pattern="EI_EXPOSE_REP,EI_EXPOSE_REP2,MS_EXPOSE_REP,SE_BAD_FIELD,CT_CONSTRUCTOR_THROW" />
+    </Match>
+</FindBugsFilter>

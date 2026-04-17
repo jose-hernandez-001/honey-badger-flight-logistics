@@ -25,13 +25,13 @@ package com.honeybadger.flightlogistics.persistence;
 import com.honeybadger.flightlogistics.domain.RouteEntity;
 import com.honeybadger.flightlogistics.domain.WaypointEntity;
 import io.cucumber.spring.ScenarioScope;
-import org.springframework.stereotype.Component;
+import org.springframework.boot.test.context.TestComponent;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
-@Component
+@TestComponent
 @ScenarioScope
 public class ScenarioContext {
 

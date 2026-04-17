@@ -23,10 +23,10 @@
 package com.honeybadger.flightlogistics.performance;
 
 import io.cucumber.spring.ScenarioScope;
-import org.springframework.stereotype.Component;
+import org.springframework.boot.test.context.TestComponent;
 import us.abstracta.jmeter.javadsl.core.TestPlanStats;
 
-@Component
+@TestComponent
 @ScenarioScope
 public class PerformanceScenarioContext {
 

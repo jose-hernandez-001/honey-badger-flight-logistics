@@ -125,6 +125,21 @@ To initialise GeoServer with the seed data (run once):
 docker compose --profile init up geoserver-init
 ```
 
+## Offline Working
+
+To populate your local Maven repository (`~/.m2/repository`) with all necessary dependencies to work completely offline (e.g., for CI/CD environments or travel), run the following command. This will download the main artifacts, along with the source code and Javadocs:
+
+```bash
+mvn dependency:go-offline dependency:resolve-sources dependency:resolve -Dclassifier=javadoc
+```
+
+*Note: If you use a custom `settings.xml`, be sure to add `-s .mvn/local-settings.xml` to the command.* E.g.
+
+```bash
+./mvnw -s .mvn/local-settings.xml dependency:go-offline dependency:resolve-sources dependency:resolve -Dclassifier=javadoc
+./mvnw -s .mvn/local-settings.xml -o spring-boot:run
+```
+
 ## Configuration
 
 Key properties (overridable via environment variables):

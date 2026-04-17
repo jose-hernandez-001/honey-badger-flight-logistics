@@ -51,12 +51,12 @@ public class GrpcWaypointsService extends WaypointsServiceGrpc.WaypointsServiceI
 
     @Override
     public void createWaypoint(
-            WaypointsServiceOuterClass.CreateWaypointRequest request,
-            StreamObserver<WaypointsServiceOuterClass.CreateWaypointResponse> responseObserver) {
+            openapitools.services.waypointsservice.WaypointsServiceOuterClass.CreateWaypointRequest request,
+            StreamObserver<openapitools.services.waypointsservice.WaypointsServiceOuterClass.CreateWaypointResponse> responseObserver) {
         var httpResponse = delegate.createWaypoint(
                 UUID.fromString(request.getRouteId()),
                 ProtoMapper.toWaypointRequest(request.getWaypointRequest()));
-        var builder = WaypointsServiceOuterClass.CreateWaypointResponse.newBuilder();
+        var builder = openapitools.services.waypointsservice.WaypointsServiceOuterClass.CreateWaypointResponse.newBuilder();
         if (httpResponse.getStatusCode().is2xxSuccessful() && httpResponse.getBody() != null) {
             builder.setWaypoint201(ProtoMapper.toProtoWaypoint(httpResponse.getBody()));
         }
@@ -66,12 +66,12 @@ public class GrpcWaypointsService extends WaypointsServiceGrpc.WaypointsServiceI
 
     @Override
     public void deleteWaypoint(
-            WaypointsServiceOuterClass.DeleteWaypointRequest request,
-            StreamObserver<WaypointsServiceOuterClass.DeleteWaypointResponse> responseObserver) {
+            openapitools.services.waypointsservice.WaypointsServiceOuterClass.DeleteWaypointRequest request,
+            StreamObserver<openapitools.services.waypointsservice.WaypointsServiceOuterClass.DeleteWaypointResponse> responseObserver) {
         var httpResponse = delegate.deleteWaypoint(
                 UUID.fromString(request.getRouteId()),
                 UUID.fromString(request.getWaypointId()));
-        var builder = WaypointsServiceOuterClass.DeleteWaypointResponse.newBuilder();
+        var builder = openapitools.services.waypointsservice.WaypointsServiceOuterClass.DeleteWaypointResponse.newBuilder();
         if (httpResponse.getStatusCode().is2xxSuccessful()) {
             builder.setEmpty204(Empty.getDefaultInstance());
         }
@@ -81,12 +81,12 @@ public class GrpcWaypointsService extends WaypointsServiceGrpc.WaypointsServiceI
 
     @Override
     public void getWaypoint(
-            WaypointsServiceOuterClass.GetWaypointRequest request,
-            StreamObserver<WaypointsServiceOuterClass.GetWaypointResponse> responseObserver) {
+            openapitools.services.waypointsservice.WaypointsServiceOuterClass.GetWaypointRequest request,
+            StreamObserver<openapitools.services.waypointsservice.WaypointsServiceOuterClass.GetWaypointResponse> responseObserver) {
         var httpResponse = delegate.getWaypoint(
                 UUID.fromString(request.getRouteId()),
                 UUID.fromString(request.getWaypointId()));
-        var builder = WaypointsServiceOuterClass.GetWaypointResponse.newBuilder();
+        var builder = openapitools.services.waypointsservice.WaypointsServiceOuterClass.GetWaypointResponse.newBuilder();
         if (httpResponse.getStatusCode().is2xxSuccessful() && httpResponse.getBody() != null) {
             builder.setWaypoint200(ProtoMapper.toProtoWaypoint(httpResponse.getBody()));
         }
@@ -96,15 +96,15 @@ public class GrpcWaypointsService extends WaypointsServiceGrpc.WaypointsServiceI
 
     @Override
     public void listWaypoints(
-            WaypointsServiceOuterClass.ListWaypointsRequest request,
-            StreamObserver<WaypointsServiceOuterClass.ListWaypointsResponse> responseObserver) {
+            openapitools.services.waypointsservice.WaypointsServiceOuterClass.ListWaypointsRequest request,
+            StreamObserver<openapitools.services.waypointsservice.WaypointsServiceOuterClass.ListWaypointsResponse> responseObserver) {
         var sort = request.getSort().isEmpty() ? null : request.getSort();
         var httpResponse = delegate.listWaypoints(
                 UUID.fromString(request.getRouteId()),
                 request.getPage(),
                 request.getSize(),
                 sort);
-        var builder = WaypointsServiceOuterClass.ListWaypointsResponse.newBuilder();
+        var builder = openapitools.services.waypointsservice.WaypointsServiceOuterClass.ListWaypointsResponse.newBuilder();
         if (httpResponse.getStatusCode().is2xxSuccessful() && httpResponse.getBody() != null) {
             builder.setWaypointPage200(toProtoWaypointPage(httpResponse.getBody()));
         }
@@ -114,13 +114,13 @@ public class GrpcWaypointsService extends WaypointsServiceGrpc.WaypointsServiceI
 
     @Override
     public void patchWaypoint(
-            WaypointsServiceOuterClass.PatchWaypointRequest request,
-            StreamObserver<WaypointsServiceOuterClass.PatchWaypointResponse> responseObserver) {
+            openapitools.services.waypointsservice.WaypointsServiceOuterClass.PatchWaypointRequest request,
+            StreamObserver<openapitools.services.waypointsservice.WaypointsServiceOuterClass.PatchWaypointResponse> responseObserver) {
         var httpResponse = delegate.patchWaypoint(
                 UUID.fromString(request.getRouteId()),
                 UUID.fromString(request.getWaypointId()),
                 ProtoMapper.toWaypointPatch(request.getWaypointPatch()));
-        var builder = WaypointsServiceOuterClass.PatchWaypointResponse.newBuilder();
+        var builder = openapitools.services.waypointsservice.WaypointsServiceOuterClass.PatchWaypointResponse.newBuilder();
         if (httpResponse.getStatusCode().is2xxSuccessful() && httpResponse.getBody() != null) {
             builder.setWaypoint200(ProtoMapper.toProtoWaypoint(httpResponse.getBody()));
         }
@@ -130,12 +130,12 @@ public class GrpcWaypointsService extends WaypointsServiceGrpc.WaypointsServiceI
 
     @Override
     public void reorderWaypoints(
-            WaypointsServiceOuterClass.ReorderWaypointsRequest request,
-            StreamObserver<WaypointsServiceOuterClass.ReorderWaypointsResponse> responseObserver) {
+            openapitools.services.waypointsservice.WaypointsServiceOuterClass.ReorderWaypointsRequest request,
+            StreamObserver<openapitools.services.waypointsservice.WaypointsServiceOuterClass.ReorderWaypointsResponse> responseObserver) {
         var httpResponse = delegate.reorderWaypoints(
                 UUID.fromString(request.getRouteId()),
                 ProtoMapper.toWaypointReorderRequest(request.getWaypointReorderRequest()));
-        var builder = WaypointsServiceOuterClass.ReorderWaypointsResponse.newBuilder();
+        var builder = openapitools.services.waypointsservice.WaypointsServiceOuterClass.ReorderWaypointsResponse.newBuilder();
         if (httpResponse.getStatusCode().is2xxSuccessful() && httpResponse.getBody() != null) {
             builder.setWaypointList200(toProtoWaypointList(httpResponse.getBody()));
         }
@@ -145,13 +145,13 @@ public class GrpcWaypointsService extends WaypointsServiceGrpc.WaypointsServiceI
 
     @Override
     public void updateWaypoint(
-            WaypointsServiceOuterClass.UpdateWaypointRequest request,
-            StreamObserver<WaypointsServiceOuterClass.UpdateWaypointResponse> responseObserver) {
+            openapitools.services.waypointsservice.WaypointsServiceOuterClass.UpdateWaypointRequest request,
+            StreamObserver<openapitools.services.waypointsservice.WaypointsServiceOuterClass.UpdateWaypointResponse> responseObserver) {
         var httpResponse = delegate.updateWaypoint(
                 UUID.fromString(request.getRouteId()),
                 UUID.fromString(request.getWaypointId()),
                 ProtoMapper.toWaypointRequest(request.getWaypointRequest()));
-        var builder = WaypointsServiceOuterClass.UpdateWaypointResponse.newBuilder();
+        var builder = openapitools.services.waypointsservice.WaypointsServiceOuterClass.UpdateWaypointResponse.newBuilder();
         if (httpResponse.getStatusCode().is2xxSuccessful() && httpResponse.getBody() != null) {
             builder.setWaypoint200(ProtoMapper.toProtoWaypoint(httpResponse.getBody()));
         }
